@@ -163,4 +163,55 @@ router.post("/invite", authAsAdmin, async (req, res) => {
   }
 });
 
+router.post("/resend", authAsAdmin, async (req, res) => {
+  try {
+    const { email } = req.body;
+    if (!email)
+      return res.status(400).send({ error: "email is required field." });
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).send({ error: "No user with this email exists." });
+    }
+    const password = generatePassword(8, false) + "A$112233";
+    await user.updateOne({ password });
+
+    const msg = {
+      to: email,
+      from: `sjay05305@gmail.com`,
+      subject: "Your Task Management Portal's credentails has been changed.",
+      text: "Credentials",
+      html: `
+         <strong>Task Management Portal</strong><br>
+         Admin has changed your credentials on task management tool. Your old credentials will not be valid anymore.<br>
+         <b>New Credentials:<b><br>
+         <b>Email: </b> <span>${email}</span><br>
+         <b>Password: </b> <span>${password}</span><br>
+         Note: Do not share your credentials with anyone.<br>
+      `,
+    };
+
+    sgMail
+      .send(msg)
+      .then(() => {
+        res.send();
+      })
+      .catch((error) => {
+        return res.status(500).send({ error: "Internal Server Error!" });
+      });
+  } catch (error) {
+    console.log(error, error.code);
+    if (error.name === "MongoError" && error.code === 11000) {
+      return res
+        .status(400)
+        .send({ error: "someone already using this email." });
+    }
+    if (error.name === "ValidationError") {
+      return res.status(400).send({ error: error.message });
+    }
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
 export default router;

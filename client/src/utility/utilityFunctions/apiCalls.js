@@ -29,3 +29,8 @@ export const inviteUser = async (email, role) => {
   setConfigs();
   return axios.post(`/users/invite`, { email, role }, configs);
 };
+
+export const resendInvite = async (email) => {
+  setConfigs();
+  return axios.post(`/users/resend`, { email }, configs);
+};

@@ -24,11 +24,17 @@ import {
 import moment from "moment";
 import DeleteIcon from "@material-ui/icons/Delete";
 import { connect } from "react-redux";
-import { setModalStateAction } from "../../actions/modalActions";
+import {
+  setModalStateAction,
+  setStaticModalAction,
+} from "../../actions/modalActions";
 import { useConfirm } from "material-ui-confirm";
 import { NavLink } from "react-router-dom";
 import Spinner from "../spinners/Spinner";
-import { getUsers } from "../../utility/utilityFunctions/apiCalls";
+import {
+  getUsers,
+  resendInvite,
+} from "../../utility/utilityFunctions/apiCalls";
 import Skeleton from "@material-ui/lab/Skeleton";
 
 function createData(
@@ -183,6 +189,7 @@ const useToolbarStyles = makeStyles((theme) => ({
   root: {
     paddingLeft: theme.spacing(2),
     paddingRight: theme.spacing(1),
+    marginTop: "1rem",
   },
   highlight:
     theme.palette.type === "light"
@@ -323,7 +330,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const TableView = ({ ...props }) => {
+const UserDetailsTable = ({ ...props }) => {
   const classes = useStyles();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(1);
@@ -336,7 +343,42 @@ const TableView = ({ ...props }) => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const confirmation = useConfirm();
   // const [projectsToRender, setProjectsToRender] = useState([]);
+
+  const resentInvite = (email) => {
+    confirmation({
+      description:
+        "New credentials will be generated and sent to user via email. Old credentials will not be valid anymore.",
+      title:
+        "This cannot be undone later. Please read carefully before confirming this.",
+      confirmationButtonProps: { color: "primary" },
+      confirmationText: "Continue",
+    })
+      .then(() => {
+        props.setStaticModal(true, "Generating new credentails...");
+        resendInvite(email)
+          .then(() => {
+            props.setStaticModal(false, "");
+            props.setModalState(
+              true,
+              "New credentails sent to user.",
+              "success"
+            );
+          })
+          .catch((error) => {
+            props.setStaticModal(false, "");
+            if (
+              error.response &&
+              error.response.data &&
+              error.response.data.error
+            )
+              props.setModalState(true, error.response.data.error, "error");
+            else props.setModalState(true, "Something went wrong!", "error");
+          });
+      })
+      .catch(() => {});
+  };
 
   useEffect(() => {
     if (users.length >= (page + 1) * rowsPerPage || users.length >= total)
@@ -355,7 +397,9 @@ const TableView = ({ ...props }) => {
         setUsers(updatedUsers);
       })
       .catch((error) => {
-        console.log("Something went wrong!", error);
+        if (error.response && error.response.data && error.response.data.error)
+          props.setModalState(true, error.response.data.error, "error");
+        else props.setModalState(true, "Something went wrong!", "error");
       });
   }, [page, orderBy, order, rowsPerPage]);
 
@@ -606,7 +650,21 @@ const TableView = ({ ...props }) => {
                                 padding: ".8rem",
                               }}
                             >
-                              <Avatar />
+                              {row.avatar ? (
+                                <Avatar
+                                  className={classes.avatarStyles}
+                                  src={row.avatar}
+                                />
+                              ) : (
+                                <Avatar
+                                  style={{
+                                    fontSize: "1.4rem",
+                                    margin: ".3rem",
+                                  }}
+                                >
+                                  {row.name.charAt(0)}
+                                </Avatar>
+                              )}
                               <Grid
                                 container
                                 direction="column"
@@ -627,11 +685,14 @@ const TableView = ({ ...props }) => {
                             </Grid>
                           </NavLink>
                         </TableCell>
-                        <TableCell>
+                        <TableCell size="small">
                           {row.userRole.title.toUpperCase()}
                         </TableCell>
                         <TableCell align="right">{row.lastActivity}</TableCell>
-                        <TableCell className={classes.link}>
+                        <TableCell
+                          className={classes.link}
+                          onClick={() => resentInvite(row.email)}
+                        >
                           Resend invite
                         </TableCell>
                         <TableCell align="right">{row.createdAt}</TableCell>
@@ -665,7 +726,9 @@ const mapDispatchToProps = (dispatch) => {
   return {
     setModalState: (modalState, text, severity) =>
       dispatch(setModalStateAction({ showModal: modalState, text, severity })),
+    setStaticModal: (modalState, text) =>
+      dispatch(setStaticModalAction({ showStaticModal: modalState, text })),
   };
 };
 
-export default connect(null, mapDispatchToProps)(TableView);
+export default connect(null, mapDispatchToProps)(UserDetailsTable);

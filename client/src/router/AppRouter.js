@@ -9,10 +9,12 @@ import GlobalModal from "../components/modals/GlobalModal";
 import PrivateRoute from "./PrivateRoute";
 import AdminOnlyRoute from "./AdminOnlyRoute";
 import UserOnlyRoute from "./UserOnlyRoute";
+import StaticModal from "../components/modals/StaticModal";
 
 const AppRouter = () => {
   return (
     <Router>
+      <StaticModal />
       <GlobalModal />
       <Switch>
         <Route path="/" component={Dashboard} exact />

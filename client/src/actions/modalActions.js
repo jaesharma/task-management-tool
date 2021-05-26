@@ -1,4 +1,4 @@
-import { SET_MODAL_STATE } from "./actionTypes";
+import { SET_MODAL_STATE, SET_STATIC_MODAL } from "./actionTypes";
 
 export const setModalStateAction = ({ showModal, text, severity = "info" }) => {
   return {
@@ -7,6 +7,16 @@ export const setModalStateAction = ({ showModal, text, severity = "info" }) => {
       showModal,
       text,
       severity,
+    },
+  };
+};
+
+export const setStaticModalAction = ({ showStaticModal, text }) => {
+  return {
+    type: SET_STATIC_MODAL,
+    payload: {
+      showStaticModal,
+      text,
     },
   };
 };
