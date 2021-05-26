@@ -44,7 +44,6 @@ router.post("/login", async (req, res) => {
 router.post("/sendotp", async (req, res) => {
   try {
     const { to } = req.body;
-    console.log("to", to);
 
     if (!to)
       return res.status(400).send({ error: "Inputs are missing in request!" });
@@ -80,7 +79,6 @@ router.post("/sendotp", async (req, res) => {
         res.status(500).send({ error: "Internal Server Error!" });
       });
   } catch (error) {
-    console.log(error);
     res.status(500).send({
       error: "Internal Server Error!",
     });

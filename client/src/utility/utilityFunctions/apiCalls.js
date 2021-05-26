@@ -15,9 +15,12 @@ const setConfigs = () => {
   };
 };
 
-export const getUsers = async () => {
+export const getUsers = async ({ order, orderBy, limit, skip }) => {
   setConfigs();
-  return axios.get(`/users`, configs);
+  return axios.get(
+    `/users/?order=${order}&orderBy=${orderBy}&limit=${limit}&skip=${skip}`,
+    configs
+  );
 };
 
 export const getUserRoles = async () => {

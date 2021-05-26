@@ -10,9 +10,11 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 router.get("/", auth, async (req, res) => {
   try {
-    let { order, orderBy = "username", limit = 5, skip = 0 } = req.query;
+    let { order, orderBy = "username", limit, skip = 0 } = req.query;
+    console.log(req.query);
     limit = +limit;
     skip = +skip;
+    if (!limit) limit = 5;
     const users = await User.aggregate([
       {
         $lookup: {
@@ -49,7 +51,6 @@ router.get("/", auth, async (req, res) => {
       total,
     });
   } catch (error) {
-    console.log(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
 });
@@ -59,7 +60,6 @@ router.get("/roles", auth, async (req, res) => {
     const roles = await UserRole.find({});
     res.send({ roles });
   } catch (error) {
-    console.log(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
 });
@@ -76,7 +76,6 @@ router.post("/role", authAsAdmin, async (req, res) => {
     await role.save();
     res.send({ role });
   } catch (error) {
-    console.log(error);
     if (error.name === "ValidationError") {
       return res.status(400).send({ error: error.message });
     }
@@ -148,7 +147,6 @@ router.post("/invite", authAsAdmin, async (req, res) => {
         return res.status(500).send({ error: "Internal Server Error!" });
       });
   } catch (error) {
-    console.log(error, error.code);
     if (error.name === "MongoError" && error.code === 11000) {
       return res
         .status(400)
@@ -199,7 +197,6 @@ router.post("/resend", authAsAdmin, async (req, res) => {
         return res.status(500).send({ error: "Internal Server Error!" });
       });
   } catch (error) {
-    console.log(error, error.code);
     if (error.name === "MongoError" && error.code === 11000) {
       return res
         .status(400)

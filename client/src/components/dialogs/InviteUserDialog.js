@@ -24,6 +24,11 @@ import {
   getUserRoles,
   inviteUser,
 } from "../../utility/utilityFunctions/apiCalls";
+import {
+  setModalStateAction,
+  setStaticModalAction,
+} from "../../actions/modalActions";
+import { connect } from "react-redux";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -70,9 +75,10 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction="right" ref={ref} {...props} />;
 });
 
-const InviteUserDialog = ({ open, handleClose }) => {
+const InviteUserDialog = ({ open, handleClose, ...props }) => {
   const classes = useStyles();
   const [roles, setRoles] = useState([]);
+  const [inviting, setInviting] = useState(false);
   const [formValues, setFormValues] = useState({
     email: "",
     role: {},
@@ -94,14 +100,25 @@ const InviteUserDialog = ({ open, handleClose }) => {
 
   const submitHandler = (e) => {
     e.preventDefault();
+    setInviting(true);
+    props.setStaticModal(true, "Generating new credentials...");
     const { email, role } = formValues;
     inviteUser(email, role._id)
       .then((resp) => {
-        console.log("resp", resp);
+        setInviting(false);
+        props.setStaticModal(false, "");
+        props.setModalState(true, "New credentails sent to user.", "success");
+        handleClose();
       })
       .catch((error) => {
-        console.log("error: ", error);
-        console.log(error.response.data.error);
+        setInviting(false);
+        if (error.response && error.response.data && error.response.data.error)
+          return props.setModalState(true, error.response.data.error, "error");
+        props.setModalState(
+          true,
+          "Something went wrong. Try again later.",
+          "error"
+        );
       });
   };
 
@@ -204,6 +221,7 @@ const InviteUserDialog = ({ open, handleClose }) => {
                 style={{
                   marginTop: "1rem",
                 }}
+                disabled={inviting}
               >
                 Invite user
               </Button>
@@ -215,4 +233,14 @@ const InviteUserDialog = ({ open, handleClose }) => {
   );
 };
 
-export default InviteUserDialog;
+const mapDispatchToProps = (dispatch) => {
+  return {
+    setModalState: (modalState, text, severity) =>
+      dispatch(setModalStateAction({ showModal: modalState, text, severity })),
+
+    setStaticModal: (modalState, text) =>
+      dispatch(setStaticModalAction({ showStaticModal: modalState, text })),
+  };
+};
+
+export default connect(null, mapDispatchToProps)(InviteUserDialog);

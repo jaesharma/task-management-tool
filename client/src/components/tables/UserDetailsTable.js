@@ -107,12 +107,18 @@ const headCells = [
     label: "Role",
   },
   {
+    id: "projects-working-on",
+    numeric: true,
+    disablePadding: false,
+    label: "Projects working on",
+  },
+  {
     id: "last-activity",
     numeric: true,
     disablePadding: false,
     label: "Last activity",
   },
-  { id: "Action", numeric: false, disablePadding: false, label: "Action" },
+  { id: "action", numeric: false, disablePadding: false, label: "Action" },
   {
     id: "joined",
     numeric: true,
@@ -135,6 +141,14 @@ function EnhancedTableHead(props) {
     onRequestSort(event, property);
   };
 
+  const allowSortOn = [
+    "user",
+    "role",
+    "projects-working-on",
+    "joined",
+    "last-activity",
+  ];
+
   return (
     <TableHead>
       <TableRow>
@@ -153,21 +167,34 @@ function EnhancedTableHead(props) {
             padding={headCell.disablePadding ? "none" : "default"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
-            <TableSortLabel
-              active={orderBy === headCell.id}
-              direction={orderBy === headCell.id ? order : "asc"}
-              onClick={createSortHandler(headCell.id)}
-              style={{
-                fontWeight: 600,
-              }}
-            >
-              {headCell.label}
-              {orderBy === headCell.id ? (
-                <span className={classes.visuallyHidden}>
-                  {order === "desc" ? "sorted descending" : "sorted ascending"}
-                </span>
-              ) : null}
-            </TableSortLabel>
+            {allowSortOn.includes(headCell.id.toLowerCase()) ? (
+              <TableSortLabel
+                active={orderBy === headCell.id}
+                direction={orderBy === headCell.id ? order : "asc"}
+                onClick={createSortHandler(headCell.id)}
+                style={{
+                  fontWeight: 600,
+                }}
+              >
+                {headCell.label}
+                {orderBy === headCell.id ? (
+                  <span className={classes.visuallyHidden}>
+                    {order === "desc"
+                      ? "sorted descending"
+                      : "sorted ascending"}
+                  </span>
+                ) : null}
+              </TableSortLabel>
+            ) : (
+              <Typography
+                style={{
+                  fontWeight: 600,
+                  fontSize: ".96rem",
+                }}
+              >
+                {headCell.label}
+              </Typography>
+            )}
           </TableCell>
         ))}
       </TableRow>
@@ -203,6 +230,7 @@ const useToolbarStyles = makeStyles((theme) => ({
         },
   title: {
     flex: "1 1 100%",
+    textAlign: "center",
   },
   searchBar: {
     padding: "0 4px",
@@ -266,11 +294,7 @@ const EnhancedTableToolbar = (props) => {
 
       {numSelected > 0 && (
         <Tooltip title="Delete">
-          <IconButton
-            aria-label="delete"
-            onClick={deleteSelected}
-            disabled={!props.haveAccess}
-          >
+          <IconButton aria-label="delete" onClick={deleteSelected}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -386,12 +410,11 @@ const UserDetailsTable = ({ ...props }) => {
     //fetch users
     getUsers({
       order,
-      orderBy,
+      orderBy: orderBy === "User" ? "username" : orderBy,
       limit: (page + 1) * rowsPerPage - users.length,
       skip: users.length,
     })
       .then((resp) => {
-        console.log("resp: ", resp);
         const updatedUsers = [...users, ...resp.data.users];
         setTotal(resp.data.total);
         setUsers(updatedUsers);
@@ -404,18 +427,7 @@ const UserDetailsTable = ({ ...props }) => {
   }, [page, orderBy, order, rowsPerPage]);
 
   useEffect(() => {
-    // setProjectsToRender(projects);
-    // if (searchText.trim().length) {
-    //   const projectList = projects.filter((project) =>
-    //     project.title.startsWith(searchText)
-    //   );
-    //   setProjectsToRender(projectList);
-    // }else{
-    //   setProjectsToRender(projects)
-    // }
-
     const dataRows = [];
-    console.log(users);
     users.forEach((user) => {
       let {
         _id,
@@ -452,7 +464,6 @@ const UserDetailsTable = ({ ...props }) => {
         )
       );
     });
-    console.log("datarow:", dataRows);
     setRows(dataRows);
   }, [users, searchText]);
 
@@ -468,7 +479,7 @@ const UserDetailsTable = ({ ...props }) => {
       let newSelecteds = [],
         allIds = [];
       rows.forEach((n) => {
-        newSelecteds.push(n.title);
+        newSelecteds.push(n.username);
         allIds.push(n.id);
       });
       setSelected(newSelecteds);
@@ -484,12 +495,13 @@ const UserDetailsTable = ({ ...props }) => {
     setSelectedIds([]);
   };
 
-  const handleClick = (event, name, id) => {
-    const selectedIndex = selected.indexOf(name);
+  const handleClick = (event, username, id) => {
+    if (event.target.innerText === "Resend invite") return;
+    const selectedIndex = selected.indexOf(username);
     let newSelected = [];
 
     if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, name);
+      newSelected = newSelected.concat(selected, username);
     } else if (selectedIndex === 0) {
       newSelected = newSelected.concat(selected.slice(1));
     } else if (selectedIndex === selected.length - 1) {
@@ -521,7 +533,7 @@ const UserDetailsTable = ({ ...props }) => {
     setPage(0);
   };
 
-  const isSelected = (name) => selected.indexOf(name) !== -1;
+  const isSelected = (username) => selected.indexOf(username) !== -1;
 
   const searchChangeHandler = (e) => {
     setSearchText(e.target.value);
@@ -536,10 +548,14 @@ const UserDetailsTable = ({ ...props }) => {
           <Skeleton />,
           <Skeleton />,
           <Skeleton />,
-          <Skeleton />,
-          <Skeleton />,
-          <Skeleton />,
-          <Skeleton />,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
+          <Skeleton height={40}/>,
           <Skeleton />
         )
       );
@@ -562,7 +578,6 @@ const UserDetailsTable = ({ ...props }) => {
           searchChangeHandler={searchChangeHandler}
           setModalState={props.setModalState}
           deselectAll={deselectAll}
-          haveAccess={props.haveAccess}
         />
         <TableContainer>
           <Table
@@ -583,42 +598,62 @@ const UserDetailsTable = ({ ...props }) => {
 
             {users.length !== total &&
             users.length < (page + 1) * rowsPerPage ? (
+            // true? (
               <>
                 {renderSkeleton().map((row) => {
                   return (
                     <TableRow>
                       <TableCell padding="checkbox"></TableCell>
                       <TableCell component="th" scope="row" padding="none">
-                        <NavLink
-                          to={`/users/${row.id}`}
-                          className={classes.titleLink}
+                        <Grid
+                          container
+                          direction="row"
+                          style={{
+                            flexWrap: "nowrap",
+                          }}
                         >
-                          {row.title}
-                        </NavLink>
+                          <Skeleton variant="circle" width={40} height={40} />
+                          <Skeleton
+                            variant="rect"
+                            width={150}
+                            height={40}
+                            style={{ marginLeft: ".2rem" }}
+                          />
+                        </Grid>
                       </TableCell>
-                      <TableCell align="right">{row.upvotes}</TableCell>
-                      <TableCell align="right">{row.downvotes}</TableCell>
-                      <TableCell align="right">{row.rewards}</TableCell>
-                      <TableCell align="right">{row.comments}</TableCell>
-                      <TableCell align="right">{row.uploadedOn}</TableCell>
-                      <TableCell align="right">{row.lastUpdated}</TableCell>
+
+                      <TableCell align="right">{row.userRole}</TableCell>
+                      <TableCell align="right">{row.lastActivity}</TableCell>
+                      <TableCell align="right">
+                        <Skeleton />
+                      </TableCell>
+                      <TableCell align="right">
+                        <Skeleton />
+                      </TableCell>
+                      <TableCell align="right">{row.createdAt}</TableCell>
                     </TableRow>
                   );
                 })}
               </>
             ) : (
               <TableBody>
-                {stableSort(rows, getComparator(order, orderBy))
+                {stableSort(
+                  rows,
+                  getComparator(
+                    order,
+                    orderBy === "User" ? "username" : orderBy
+                  )
+                )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
-                    const isItemSelected = isSelected(row.title);
+                    const isItemSelected = isSelected(row.username);
                     const labelId = `enhanced-table-checkbox-${index}`;
 
                     return (
                       <TableRow
                         hover
                         onClick={(event) =>
-                          handleClick(event, row.title, row.id)
+                          handleClick(event, row.username, row.id)
                         }
                         role="checkbox"
                         aria-checked={isItemSelected}
@@ -654,6 +689,10 @@ const UserDetailsTable = ({ ...props }) => {
                                 <Avatar
                                   className={classes.avatarStyles}
                                   src={row.avatar}
+                                  style={{
+                                    fontSize: "1.4rem",
+                                    margin: ".3rem",
+                                  }}
                                 />
                               ) : (
                                 <Avatar
@@ -688,14 +727,17 @@ const UserDetailsTable = ({ ...props }) => {
                         <TableCell size="small">
                           {row.userRole.title.toUpperCase()}
                         </TableCell>
-                        <TableCell align="right">{row.lastActivity}</TableCell>
+                        <TableCell align="center">
+                          {row.projects + row.assigned}
+                        </TableCell>
+                        <TableCell align="center">{row.lastActivity}</TableCell>
                         <TableCell
                           className={classes.link}
                           onClick={() => resentInvite(row.email)}
                         >
                           Resend invite
                         </TableCell>
-                        <TableCell align="right">{row.createdAt}</TableCell>
+                        <TableCell align="center">{row.createdAt}</TableCell>
                       </TableRow>
                     );
                   })}
