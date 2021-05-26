@@ -1,0 +1,8 @@
+@keyframes fromTop {
+  0% {
+    top: -10%;
+  }
+  100% {
+    top: 0%;
+  }
+}
