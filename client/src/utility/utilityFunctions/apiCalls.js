@@ -47,3 +47,13 @@ export const getUserProfileByToken = () => {
   setConfigs();
   return axios.get("/profile", configs);
 };
+
+export const createUserRole = ({ title, permissions }) => {
+  setConfigs();
+  return axios.post("/users/role", { title, permissions }, configs);
+};
+
+export const updateRole = (id, title, permissions) => {
+  setConfigs();
+  return axios.patch("/users/role", { id, title, permissions }, configs);
+};

@@ -16,6 +16,9 @@ const GlobalModal = ({ modalText, showModal, closeModal, severity }) => {
       open={showModal}
       onClose={closeModal}
       autoHideDuration={3000}
+      style={{
+        zIndex: 99999,
+      }}
     >
       <Alert severity={severity}>{modalText}</Alert>
     </Snackbar>

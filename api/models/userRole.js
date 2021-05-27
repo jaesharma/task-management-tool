@@ -6,6 +6,8 @@ const userRoleSchema = new Schema({
   title: {
     type: String,
     required: true,
+    unique: true,
+    minLength: 1,
     validate(value) {
       if (!validator.matches(value, "^[A-Za-z0-9]+(?:[ _-][A-Za-z0-9]+)*$")) {
         throw new Error(

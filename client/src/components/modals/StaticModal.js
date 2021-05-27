@@ -14,6 +14,9 @@ const StaticModal = ({ staticModalText, showStaticModal, closeModal }) => {
     <Snackbar
       anchorOrigin={{ vertical: "top", horizontal: "center" }}
       open={showStaticModal}
+      style={{
+        zIndex: 9998,
+      }}
     >
       <Alert
         severity="info"

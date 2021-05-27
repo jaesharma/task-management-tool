@@ -3,7 +3,6 @@ import {
   Grid,
   Typography,
   makeStyles,
-  FormControl,
   FormGroup,
   FormControlLabel,
   Checkbox,
@@ -11,9 +10,16 @@ import {
 } from "@material-ui/core";
 import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
-import { getUserRoles } from "../../utility/utilityFunctions/apiCalls";
-import { setModalStateAction } from "../../actions/modalActions";
+import {
+  getUserRoles,
+  updateRole,
+} from "../../utility/utilityFunctions/apiCalls";
+import {
+  setModalStateAction,
+  setStaticModalAction,
+} from "../../actions/modalActions";
 import Spinner from "../spinners/Spinner";
+import CreateRoleDialog from "../dialogs/CreateRoleDialog";
 
 const useStyles = makeStyles((theme) => ({
   row: {
@@ -34,6 +40,8 @@ const useStyles = makeStyles((theme) => ({
 const RolePage = () => {
   const [roles, setRoles] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [updating, setUpdating] = useState(false);
+  const [createRoleDialogState, setCreateRoleDialogState] = useState(false);
   const classes = useStyles();
   const dispatch = useDispatch();
 
@@ -48,7 +56,6 @@ const RolePage = () => {
         setRoles(fetchedRoles);
         setLoading(false);
       } catch (error) {
-        console.log(error);
         dispatch(
           setModalStateAction({
             showModal: true,
@@ -63,6 +70,70 @@ const RolePage = () => {
     fetchRoles();
   }, []);
 
+  const addRole = (role) => {
+    role.dirty = false;
+    setRoles((roles) => [...roles, role]);
+  };
+
+  const updateRoleHandler = (index, id, title, permissions) => {
+    setUpdating(true);
+    dispatch(
+      setStaticModalAction({
+        showStaticModal: true,
+        text: "Updating permissions...",
+      })
+    );
+    updateRole(id, title, permissions)
+      .then((resp) => {
+        setUpdating(false);
+        dispatch(
+          setStaticModalAction({
+            showStaticModal: false,
+            text: "",
+          })
+        );
+        const { role } = resp.data;
+        setRoles((prevState) => {
+          dispatch(
+            setModalStateAction({
+              showModal: true,
+              text: "permissions updated!",
+              severity: "success",
+            })
+          );
+          const updatedRoles = [...prevState];
+          updatedRoles[index] = { ...role, dirty: false };
+          return updatedRoles;
+        });
+      })
+      .catch((error) => {
+        setUpdating(false);
+        dispatch(
+          setStaticModalAction({
+            showStaticModal: false,
+            text: "",
+          })
+        );
+
+        if (error.response && error.response.data.error) {
+          return dispatch(
+            setModalStateAction({
+              showModal: true,
+              text: error.response.data.error,
+              severity: "error",
+            })
+          );
+        }
+        dispatch(
+          setModalStateAction({
+            showModal: true,
+            text: "Something went wrong. Try again later.",
+            severity: "error",
+          })
+        );
+      });
+  };
+
   const permissionChangeHandler = (checked, index, permission) => {
     setRoles((prevState) => {
       let updatedRoles = [...prevState];
@@ -75,8 +146,19 @@ const RolePage = () => {
     });
   };
 
+  const closeCreateRoleDialog = () => {
+    setCreateRoleDialogState(false);
+  };
+
   return (
     <Grid container direction="column">
+      {createRoleDialogState && (
+        <CreateRoleDialog
+          open={createRoleDialogState}
+          handleClose={() => closeCreateRoleDialog()}
+          addRole={addRole}
+        />
+      )}
       <Grid container direction="row">
         <Typography
           style={{
@@ -103,7 +185,14 @@ const RolePage = () => {
         of these actions.
       </Typography>
       <Grid container>
-        <Grid item xs={4} className={classes.heading}>
+        <Grid
+          item
+          xs={4}
+          className={classes.heading}
+          style={{
+            paddingLeft: "1rem",
+          }}
+        >
           Role
         </Grid>
         <Grid item xs={6} className={classes.heading}>
@@ -122,6 +211,7 @@ const RolePage = () => {
             style={{
               background: "#eee",
             }}
+            onClick={() => setCreateRoleDialogState(true)}
           >
             Create Role
           </Button>
@@ -194,9 +284,17 @@ const RolePage = () => {
             </Grid>
             <Grid item xs={2} container justify="center">
               <Button
-                disabled={!role.dirty}
+                disabled={!role.dirty || updating}
                 color="primary"
                 variant="contained"
+                onClick={() =>
+                  updateRoleHandler(
+                    index,
+                    role._id,
+                    role.title,
+                    role.permissions
+                  )
+                }
               >
                 Update
               </Button>

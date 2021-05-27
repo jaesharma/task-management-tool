@@ -1,10 +1,11 @@
 import express from "express";
 import auth from "../middlewares/auth";
 import authAsAdmin from "../middlewares/authAsAdmin";
-const router = new express.Router();
+import mongoose from "mongoose";
 import { Admin, User, UserRole } from "../models/index";
 import generatePassword from "password-generator";
 const ObjectId = require("mongoose").Types.ObjectId;
+const router = new express.Router();
 const sgMail = require("@sendgrid/mail");
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
@@ -66,7 +67,7 @@ router.get("/roles", auth, async (req, res) => {
 router.post("/role", authAsAdmin, async (req, res) => {
   try {
     const { title, permissions = [] } = req.body;
-    if (!title || !permissions.length) {
+    if (!title) {
       return res.status(400).send({
         error: "title and permissions array required to create new role.",
       });
@@ -75,8 +76,17 @@ router.post("/role", authAsAdmin, async (req, res) => {
     await role.save();
     res.send({ role });
   } catch (error) {
+    if (error.name === "MongoError" && error.code === 11000) {
+      return res
+        .status(400)
+        .send({ error: "role with same title already exist." });
+    }
+
     if (error.name === "ValidationError") {
-      return res.status(400).send({ error: error.message });
+      return res.status(400).send({
+        error:
+          "Invalid title. Choose only alphanumeric letter with _ or - as separators.",
+      });
     }
     res.status(500).send({
       error: "Internal Server Error!",
@@ -221,6 +231,34 @@ router.post("/delete", authAsAdmin, async (req, res) => {
     });
     res.send();
   } catch (error) {
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.patch("/role", authAsAdmin, async (req, res) => {
+  try {
+    let { id, title, permissions = [] } = req.body;
+    if (!title.trim())
+      return res.status(400).send({ error: "Empty titles are not allowed." });
+    if (!id || !mongoose.Types.ObjectId(id))
+      return res.status(400).send({ error: "Invalid role id" });
+    const role = await UserRole.findById(id);
+    if (!role) return res.status(404).send({ error: "Role not found!" });
+    await role.updateOne({ title, permissions });
+    const updatedRole = await UserRole.findById(id);
+    res.send({ role: updatedRole });
+  } catch (error) {
+    console.log(error);
+    if (error.name === "MongoError" && error.code === 11000) {
+      return res
+        .status(400)
+        .send({ error: "role with this title already exist." });
+    }
+    if (error.name === "ValidationError") {
+      return res.status(400).send({ error: error.message });
+    }
     res.status(500).send({
       error: "Internal Server Error!",
     });
