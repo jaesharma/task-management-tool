@@ -30,10 +30,10 @@ import {
 } from "../../actions/modalActions";
 import { useConfirm } from "material-ui-confirm";
 import { NavLink } from "react-router-dom";
-import Spinner from "../spinners/Spinner";
 import {
   getUsers,
   resendInvite,
+  deleteUsers,
 } from "../../utility/utilityFunctions/apiCalls";
 import Skeleton from "@material-ui/lab/Skeleton";
 
@@ -262,7 +262,25 @@ const EnhancedTableToolbar = (props) => {
       confirmationButtonProps: { color: "secondary" },
     })
       .then(() => {
-        //delete user
+        props.setStaticModal(true, "Deleting selected users...");
+        //delete selected users
+        deleteUsers(props.selectedIds)
+          .then((resp) => {
+            props.setStaticModal(false, "");
+            props.setModalState(
+              true,
+              `${props.selectedIds.length} users deleted from the system!`,
+              "info"
+            );
+          })
+          .catch((error) => {
+            props.setStaticModal(false, "");
+            props.setModalState(
+              true,
+              "Something went wrong. Try again later.",
+              "error"
+            );
+          });
       })
       .catch(() => {});
   };
@@ -524,6 +542,10 @@ const UserDetailsTable = ({ ...props }) => {
     setSelected(newSelected);
   };
 
+  const updateUsers = () => {
+    setUsers([]);
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -548,14 +570,14 @@ const UserDetailsTable = ({ ...props }) => {
           <Skeleton />,
           <Skeleton />,
           <Skeleton />,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
-          <Skeleton height={40}/>,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
           <Skeleton />
         )
       );
@@ -574,9 +596,10 @@ const UserDetailsTable = ({ ...props }) => {
           selected={selected}
           selectedIds={selectedIds}
           users={users}
-          updateUsers={props.updateUserse}
+          updateUsers={updateUsers}
           searchChangeHandler={searchChangeHandler}
           setModalState={props.setModalState}
+          setStaticModal={props.setStaticModal}
           deselectAll={deselectAll}
         />
         <TableContainer>
@@ -598,7 +621,6 @@ const UserDetailsTable = ({ ...props }) => {
 
             {users.length !== total &&
             users.length < (page + 1) * rowsPerPage ? (
-            // true? (
               <>
                 {renderSkeleton().map((row) => {
                   return (

@@ -7,9 +7,13 @@ import { logoutAction } from "../../actions/authActions";
 import { connect } from "react-redux";
 import { Tooltip } from "@material-ui/core";
 import { useConfirm } from "material-ui-confirm";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faUserTag } from "@fortawesome/free-solid-svg-icons";
+import { useHistory } from "react-router";
 
 const MainListItems = ({ active, ...props }) => {
   const confirmation = useConfirm();
+  const history = useHistory();
   const logout = () => {
     confirmation({
       description: "You will be logged out.",
@@ -23,15 +27,39 @@ const MainListItems = ({ active, ...props }) => {
   return (
     <div>
       <Tooltip title="users">
-        <ListItem button>
+        <ListItem
+          button
+          onClick={() => {
+            history.push("/cpanel/users");
+          }}
+        >
           <ListItemIcon>
             <Users
               style={{
-                color: `${active === "/users" ? "blue" : "gray"}`,
+                color: `${active === "users" ? "blue" : "gray"}`,
               }}
             />
           </ListItemIcon>
           <ListItemText primary="Users" />
+        </ListItem>
+      </Tooltip>
+      <Tooltip title="roles">
+        <ListItem
+          button
+          onClick={() => {
+            history.push("/cpanel/roles");
+          }}
+        >
+          <ListItemIcon>
+            <FontAwesomeIcon
+              icon={faUserTag}
+              style={{
+                fontSize: "1.4rem",
+                color: `${active === "roles" ? "blue" : "gray"}`,
+              }}
+            />
+          </ListItemIcon>
+          <ListItemText primary="Roles & Permissions" />
         </ListItem>
       </Tooltip>
       <Tooltip title="logout">

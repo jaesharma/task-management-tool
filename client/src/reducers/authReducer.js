@@ -4,6 +4,7 @@ const initialState = {
   isAuthenticated: false,
   as: undefined,
   user: {},
+  loading: true,
 };
 
 const authReducer = (state = initialState, action) => {
@@ -14,11 +15,15 @@ const authReducer = (state = initialState, action) => {
         isAuthenticated: true,
         as,
         user: profile,
+        loading: false,
       };
     }
     case LOGOUT: {
       localStorage.removeItem("authToken");
-      return initialState;
+      return {
+        ...initialState,
+        loading: false,
+      };
     }
     case SETUP_PROFILE: {
       const { as, profile } = action.payload;
@@ -26,6 +31,7 @@ const authReducer = (state = initialState, action) => {
         isAuthenticated: true,
         as,
         user: profile,
+        loading: false,
       };
     }
     default:

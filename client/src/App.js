@@ -1,17 +1,15 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Grid } from "@material-ui/core";
-import { setupAuthentication } from "./actions/authActions";
+import { setInitialSession } from "./actions/authActions";
 import Spinner from "./components/spinners/Spinner";
 import AppRouter from "./router/AppRouter";
+import { useDispatch, useSelector } from "react-redux";
 
 const App = () => {
-  const [loading, setLoading] = useState(true);
+  const dispatch = useDispatch();
+  const loading = useSelector((state) => state.authReducer.loading);
   useEffect(() => {
-    async function setup() {
-      await setupAuthentication();
-      setLoading(false);
-    }
-    setup();
+    dispatch(setInitialSession());
   }, []);
 
   if (loading)

@@ -1,6 +1,9 @@
 import { createStore, compose, applyMiddleware } from "redux";
-import thunk from "redux-thunk";
 import rootReducer from "../reducers";
+import createSagaMiddleware from "redux-saga";
+import { watcherSaga } from "../sagas/rootSaga";
+
+const sagaMiddleware = createSagaMiddleware();
 
 const composeEnhancers =
   (typeof window !== "undefined" &&
@@ -9,7 +12,9 @@ const composeEnhancers =
 
 const store = createStore(
   rootReducer,
-  composeEnhancers(applyMiddleware(thunk))
+  composeEnhancers(applyMiddleware(sagaMiddleware))
 );
+
+sagaMiddleware.run(watcherSaga);
 
 export default store;

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import clsx from "clsx";
 import {
   makeStyles,
@@ -21,6 +21,9 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 import MainListItems from "./MainListItems";
 import UserDetailsTable from "../tables/UserDetailsTable";
 import InviteUserDialog from "../dialogs/InviteUserDialog";
+import { useHistory } from "react-router";
+import RolePage from "./RolePage";
+import UsersPage from "./UsersPage";
 
 const drawerWidth = 240;
 
@@ -103,10 +106,31 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const CPanel = () => {
+const renderTab = (tab, actions) => {
+  switch (tab) {
+    case "users":
+      return <UsersPage setInviteUserDialog={actions.setInviteUserDialog} />;
+    case "roles":
+      return <RolePage />;
+  }
+};
+
+const CPanel = (props) => {
   const classes = useStyles();
   const [open, setOpen] = React.useState(true);
+  const [tab, setTab] = useState("users");
   const [inviteUserDialog, setInviteUserDialog] = useState(false);
+  const history = useHistory();
+
+  useEffect(() => {
+    const { tab } = props.computedMatch.params;
+    if (["users", "roles", "logout"].includes(tab)) {
+      setTab(tab);
+    } else {
+      history.replace("/cpanel/users");
+    }
+  }, [props.computedMatch.params]);
+
   const handleDrawerOpen = () => {
     setOpen(true);
   };
@@ -149,11 +173,14 @@ const CPanel = () => {
           <Typography
             component="h1"
             variant="h6"
-            color="inherit"
             noWrap
             className={classes.title}
+            style={{
+              color: "gray",
+              fontWeight: 600,
+            }}
           >
-            Dashboard
+            Admin Panel
           </Typography>
           <IconButton color="inherit">
             <Badge badgeContent={4} color="secondary">
@@ -176,35 +203,16 @@ const CPanel = () => {
         </div>
         <Divider />
         <List>
-          <MainListItems active="/users" />
+          <MainListItems active={tab} />
         </List>
         <Divider />
       </Drawer>
       <main className={classes.content}>
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
-          <Grid container direction="row" justify="space-between">
-            <Typography
-              varaint="h4"
-              style={{
-                fontWeight: 800,
-              }}
-            >
-              Users
-            </Typography>
-            <Grid>
-              <Button
-                color="primary"
-                variant="contained"
-                onClick={() => {
-                  setInviteUserDialog(true);
-                }}
-              >
-                Invite User
-              </Button>
-            </Grid>
-          </Grid>
-          <UserDetailsTable />
+          {renderTab(tab, {
+            setInviteUserDialog: setInviteUserDialog,
+          })}
         </Container>
       </main>
     </div>

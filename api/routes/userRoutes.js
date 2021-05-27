@@ -11,7 +11,6 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 router.get("/", auth, async (req, res) => {
   try {
     let { order, orderBy = "username", limit, skip = 0 } = req.query;
-    console.log(req.query);
     limit = +limit;
     skip = +skip;
     if (!limit) limit = 5;
@@ -205,6 +204,23 @@ router.post("/resend", authAsAdmin, async (req, res) => {
     if (error.name === "ValidationError") {
       return res.status(400).send({ error: error.message });
     }
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.post("/delete", authAsAdmin, async (req, res) => {
+  try {
+    let { users = [] } = req.body;
+    users = users.map((user) => mongoose.Types.ObjectId(user));
+    await User.deleteMany({
+      _id: {
+        $in: users,
+      },
+    });
+    res.send();
+  } catch (error) {
     res.status(500).send({
       error: "Internal Server Error!",
     });

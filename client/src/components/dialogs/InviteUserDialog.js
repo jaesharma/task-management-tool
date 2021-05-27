@@ -112,6 +112,7 @@ const InviteUserDialog = ({ open, handleClose, ...props }) => {
       })
       .catch((error) => {
         setInviting(false);
+        props.setStaticModal(false, "");
         if (error.response && error.response.data && error.response.data.error)
           return props.setModalState(true, error.response.data.error, "error");
         props.setModalState(

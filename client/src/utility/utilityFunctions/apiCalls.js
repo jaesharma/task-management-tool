@@ -37,3 +37,13 @@ export const resendInvite = async (email) => {
   setConfigs();
   return axios.post(`/users/resend`, { email }, configs);
 };
+
+export const deleteUsers = async (users) => {
+  setConfigs();
+  return axios.post(`/users/delete`, { users }, configs);
+};
+
+export const getUserProfileByToken = () => {
+  setConfigs();
+  return axios.get("/profile", configs);
+};

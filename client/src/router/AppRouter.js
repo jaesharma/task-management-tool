@@ -10,6 +10,7 @@ import PrivateRoute from "./PrivateRoute";
 import AdminOnlyRoute from "./AdminOnlyRoute";
 import UserOnlyRoute from "./UserOnlyRoute";
 import StaticModal from "../components/modals/StaticModal";
+import RolePage from "../components/admin/RolePage";
 
 const AppRouter = () => {
   return (
@@ -21,7 +22,7 @@ const AppRouter = () => {
         <Route path="/admin/login" component={Login} exact />
         <Route path="/user/login" component={Login} exact />
         <Route path="/forgotpass" component={ForgotPasswordPage} exact />
-        <AdminOnlyRoute path="/cpanel" component={CPanel} exact />
+        <AdminOnlyRoute path="/cpanel/:tab" component={CPanel} exact />
         <Route component={NotFound} />
       </Switch>
     </Router>
