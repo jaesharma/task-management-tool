@@ -122,7 +122,7 @@ userSchema.methods.generateAuthToken = async function () {
   const token = jwt.sign(
     {
       _id: this._id.toString(),
-      as: "admin",
+      as: "user",
     },
     process.env.JWT_SECRET
   );

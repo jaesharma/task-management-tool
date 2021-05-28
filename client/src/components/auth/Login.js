@@ -62,10 +62,12 @@ const Login = (props) => {
   const login = (e) => {
     e.preventDefault();
     setLoggingIn(true);
+    const url = authOf === "admin" ? `/${authOf}/login` : `/users/login`;
     axios
-      .post(`/${authOf}/login`, formFields)
+      .post(url, formFields)
       .then((resp) => {
-        const { token, profile } = resp.data;
+        const { token, user: profile } = resp.data;
+        console.log("resp: ", resp.data);
         props.login(token, profile, authOf);
         setLoggingIn(false);
       })

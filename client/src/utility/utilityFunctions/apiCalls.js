@@ -57,3 +57,13 @@ export const updateRole = (id, title, permissions) => {
   setConfigs();
   return axios.patch("/users/role", { id, title, permissions }, configs);
 };
+
+export const updateUser = ({ uid, roleId }) => {
+  setConfigs();
+  return axios.patch(`/users/${uid}`, { roleId }, configs);
+};
+
+export const logout = () => {
+  setConfigs();
+  return axios.post("/logout", {}, configs);
+};

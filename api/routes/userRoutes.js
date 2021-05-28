@@ -2,6 +2,7 @@ import express from "express";
 import auth from "../middlewares/auth";
 import authAsAdmin from "../middlewares/authAsAdmin";
 import mongoose from "mongoose";
+import bcrypt from "bcryptjs";
 import { Admin, User, UserRole } from "../models/index";
 import generatePassword from "password-generator";
 const ObjectId = require("mongoose").Types.ObjectId;
@@ -61,6 +62,40 @@ router.get("/roles", auth, async (req, res) => {
     res.send({ roles });
   } catch (error) {
     res.status(500).send({ error: "Internal Server Error" });
+  }
+});
+
+router.post("/login", async (req, res) => {
+  try {
+    const { email = "", password = "" } = req.body;
+    if (!email.trim() || !password) {
+      return res.status(400).send({
+        error: "Email and password are required for login!",
+      });
+    }
+    const user = await User.findOne({
+      email,
+    });
+    if (!user) {
+      return res.status(404).send({
+        error: "Invalid Email Address!",
+      });
+    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).send({ error: "wrong password" });
+
+    const token = await user.generateAuthToken();
+    let userObj = user.toObject();
+    delete userObj.tokens;
+    res.json({
+      user: userObj,
+      token,
+    });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
   }
 });
 
@@ -256,6 +291,27 @@ router.patch("/role", authAsAdmin, async (req, res) => {
         .status(400)
         .send({ error: "role with this title already exist." });
     }
+    if (error.name === "ValidationError") {
+      return res.status(400).send({ error: error.message });
+    }
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.patch("/:uid", authAsAdmin, async (req, res) => {
+  try {
+    const { roleId } = req.body;
+    const { uid } = req.params;
+    console.log(uid);
+    const user = await User.findById(uid);
+    if (!user) return res.status(404).send({ error: "user not found." });
+    await user.updateOne({ userRole: roleId });
+    const updatedUser = await User.findById(uid).populate("userRole");
+    res.send({ user: updatedUser });
+  } catch (error) {
+    console.log(error);
     if (error.name === "ValidationError") {
       return res.status(400).send({ error: error.message });
     }

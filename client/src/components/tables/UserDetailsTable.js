@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import PropTypes from "prop-types";
-import clsx from "clsx";
 import { lighten, makeStyles } from "@material-ui/core/styles";
 import {
   Table,
@@ -14,27 +13,30 @@ import {
   Toolbar,
   Typography,
   Paper,
-  Checkbox,
-  IconButton,
-  Tooltip,
   InputBase,
   Grid,
   Avatar,
+  Button,
+  CircularProgress,
 } from "@material-ui/core";
 import moment from "moment";
-import DeleteIcon from "@material-ui/icons/Delete";
 import { connect } from "react-redux";
 import {
   setModalStateAction,
   setStaticModalAction,
 } from "../../actions/modalActions";
+import { Check, Edit3 } from "react-feather";
 import { useConfirm } from "material-ui-confirm";
 import { NavLink } from "react-router-dom";
 import {
   getUsers,
   resendInvite,
-  deleteUsers,
+  getUserRoles,
+  updateUser,
 } from "../../utility/utilityFunctions/apiCalls";
+import MenuItem from "@material-ui/core/MenuItem";
+import FormControl from "@material-ui/core/FormControl";
+import Select from "@material-ui/core/Select";
 import Skeleton from "@material-ui/lab/Skeleton";
 
 function createData(
@@ -152,14 +154,7 @@ function EnhancedTableHead(props) {
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox">
-          <Checkbox
-            indeterminate={numSelected > 0 && numSelected < rowCount}
-            checked={rowCount > 0 && numSelected === rowCount}
-            onChange={onSelectAllClick}
-            inputProps={{ "aria-label": "select all desserts" }}
-          />
-        </TableCell>
+        <TableCell padding="checkbox"></TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
@@ -248,48 +243,15 @@ const useToolbarStyles = makeStyles((theme) => ({
 
 const EnhancedTableToolbar = (props) => {
   const classes = useToolbarStyles();
-  const { numSelected } = props;
-  const confirmation = useConfirm();
-
-  const deleteSelected = () => {
-    const descriptionString = `${props.selectedIds.length} ${
-      props.selectedIds.length > 1 ? "Users" : "User"
-    } will be deleted?`;
-
-    confirmation({
-      description: descriptionString,
-      confirmationText: "Delete",
-      confirmationButtonProps: { color: "secondary" },
-    })
-      .then(() => {
-        props.setStaticModal(true, "Deleting selected users...");
-        //delete selected users
-        deleteUsers(props.selectedIds)
-          .then((resp) => {
-            props.setStaticModal(false, "");
-            props.setModalState(
-              true,
-              `${props.selectedIds.length} users deleted from the system!`,
-              "info"
-            );
-          })
-          .catch((error) => {
-            props.setStaticModal(false, "");
-            props.setModalState(
-              true,
-              "Something went wrong. Try again later.",
-              "error"
-            );
-          });
-      })
-      .catch(() => {});
-  };
 
   return (
     <Toolbar
-      className={clsx(classes.root, {
-        [classes.highlight]: numSelected > 0,
-      })}
+      className={classes.root}
+      style={{
+        borderBottom: "1px solid #ccc",
+        display: "flex",
+        justifyContent: "space-between",
+      }}
     >
       <InputBase
         placeholder="Search"
@@ -299,24 +261,11 @@ const EnhancedTableToolbar = (props) => {
         }}
         onChange={props.searchChangeHandler}
       />
-      {numSelected > 0 && (
-        <Typography
-          className={classes.title}
-          color="inherit"
-          variant="subtitle1"
-          component="div"
-        >
-          {numSelected} selected
-        </Typography>
-      )}
-
-      {numSelected > 0 && (
-        <Tooltip title="Delete">
-          <IconButton aria-label="delete" onClick={deleteSelected}>
-            <DeleteIcon />
-          </IconButton>
-        </Tooltip>
-      )}
+      <Grid item xs={3} container justify="flex-end">
+        {props.editing && (
+          <Button onClick={() => props.cancelEditing()}>Cancel editing</Button>
+        )}
+      </Grid>
     </Toolbar>
   );
 };
@@ -370,6 +319,12 @@ const useStyles = makeStyles((theme) => ({
       cursor: "pointer",
     },
   },
+  iconStyles: {
+    marginLeft: ".8rem",
+    "&:hover": {
+      cursor: "pointer",
+    },
+  },
 }));
 
 const UserDetailsTable = ({ ...props }) => {
@@ -385,6 +340,10 @@ const UserDetailsTable = ({ ...props }) => {
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [rows, setRows] = useState([]);
   const [searchText, setSearchText] = useState("");
+  const [editRow, setEditRow] = useState("");
+  const [editingRow, setEditingRow] = useState({});
+  const [roles, setRoles] = useState([]);
+  const [updating, setUpdating] = useState(false);
   const confirmation = useConfirm();
   // const [projectsToRender, setProjectsToRender] = useState([]);
 
@@ -485,6 +444,16 @@ const UserDetailsTable = ({ ...props }) => {
     setRows(dataRows);
   }, [users, searchText]);
 
+  useEffect(() => {
+    getUserRoles()
+      .then((resp) => {
+        setRoles(resp.data.roles);
+      })
+      .catch((error) => {
+        console.log(error, error.response);
+      });
+  }, []);
+
   const handleRequestSort = (_event, property) => {
     if (users.length < total) setUsers([]);
     const isAsc = orderBy === property && order === "asc";
@@ -555,10 +524,45 @@ const UserDetailsTable = ({ ...props }) => {
     setPage(0);
   };
 
-  const isSelected = (username) => selected.indexOf(username) !== -1;
-
   const searchChangeHandler = (e) => {
     setSearchText(e.target.value);
+  };
+
+  const startEditing = (row) => {
+    console.log(row);
+    setEditRow(row.id);
+    setEditingRow(row);
+  };
+
+  const cancelEditing = () => {
+    setEditRow("");
+    setEditingRow({});
+  };
+
+  const updateUserHandler = (index) => {
+    setUpdating(true);
+    const user = users.find((user) => user._id === editRow);
+    user.userRole = editingRow.userRole;
+    updateUser({ uid: editingRow.id, roleId: editingRow.userRole._id })
+      .then((resp) => {
+        setUpdating(false);
+        const updatedUsersList = [...users];
+        updatedUsersList[index] = resp.data.user;
+        setUsers(updatedUsersList);
+        cancelEditing();
+        props.setModalState(true, "user details updated!", "info");
+      })
+      .catch((error) => {
+        setUpdating(false);
+        if (error.response && error.response.data && error.response.data.error)
+          return props.setModalState(true, error.response.data.error, "error");
+        props.setModalState(true, "Something went wrong!", "error");
+      });
+  };
+
+  const roleChangeHandler = (e) => {
+    const role = roles.find((role) => role._id === e.target.value);
+    setEditingRow((curr) => ({ ...curr, userRole: role }));
   };
 
   const renderSkeleton = () => {
@@ -592,9 +596,8 @@ const UserDetailsTable = ({ ...props }) => {
     <div className={classes.root}>
       <Paper className={classes.paper}>
         <EnhancedTableToolbar
-          numSelected={selected.length}
-          selected={selected}
-          selectedIds={selectedIds}
+          editing={!!editRow}
+          cancelEditing={() => cancelEditing()}
           users={users}
           updateUsers={updateUsers}
           searchChangeHandler={searchChangeHandler}
@@ -668,8 +671,121 @@ const UserDetailsTable = ({ ...props }) => {
                 )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
-                    const isItemSelected = isSelected(row.username);
                     const labelId = `enhanced-table-checkbox-${index}`;
+                    if (editRow === row.id) {
+                      return (
+                        <TableRow
+                          hover
+                          onClick={(event) =>
+                            handleClick(event, row.username, row.id)
+                          }
+                          role="checkbox"
+                          tabIndex={-1}
+                          key={row.id}
+                          style={{
+                            backgroundColor: "#eee",
+                          }}
+                        >
+                          <TableCell padding="checkbox">
+                            <Typography className={classes.iconStyles}>
+                              {updating ? (
+                                <CircularProgress size={16} />
+                              ) : (
+                                <Check
+                                  onClick={() => updateUserHandler(index)}
+                                />
+                              )}
+                            </Typography>
+                          </TableCell>
+                          <TableCell
+                            component="th"
+                            id={labelId}
+                            scope="row"
+                            padding="none"
+                          >
+                            <NavLink
+                              to={`/users/${row.id}`}
+                              className={classes.titleLink}
+                            >
+                              <Grid
+                                container
+                                direction="row"
+                                style={{
+                                  flexWrap: "nowrap",
+                                  padding: ".8rem",
+                                }}
+                              >
+                                {row.avatar ? (
+                                  <Avatar
+                                    className={classes.avatarStyles}
+                                    src={row.avatar}
+                                    style={{
+                                      fontSize: "1.4rem",
+                                      margin: ".3rem",
+                                    }}
+                                  />
+                                ) : (
+                                  <Avatar
+                                    style={{
+                                      fontSize: "1.4rem",
+                                      margin: ".3rem",
+                                    }}
+                                  >
+                                    {row.name.charAt(0)}
+                                  </Avatar>
+                                )}
+                                <Grid
+                                  container
+                                  direction="column"
+                                  style={{
+                                    marginLeft: ".5rem",
+                                  }}
+                                >
+                                  <Typography>{row.name}</Typography>
+                                  <Typography
+                                    style={{
+                                      color: "#777",
+                                      fontSize: ".8rem",
+                                    }}
+                                  >
+                                    {row.email}
+                                  </Typography>
+                                </Grid>
+                              </Grid>
+                            </NavLink>
+                          </TableCell>
+                          <TableCell size="small">
+                            <FormControl className={classes.margin}>
+                              <Select
+                                labelId="select-role"
+                                id="select-role"
+                                value={editingRow.userRole._id}
+                                onChange={roleChangeHandler}
+                              >
+                                {roles.map((role) => (
+                                  <MenuItem value={role._id}>
+                                    {role.title.toLowerCase().replace("_", " ")}
+                                  </MenuItem>
+                                ))}
+                              </Select>
+                            </FormControl>
+                          </TableCell>
+                          <TableCell align="center">
+                            {row.projects + row.assigned}
+                          </TableCell>
+                          <TableCell align="center">
+                            {row.lastActivity}
+                          </TableCell>
+                          <TableCell
+                            className={classes.link}
+                            onClick={() => resentInvite(row.email)}
+                          >
+                            Resend invite
+                          </TableCell>
+                          <TableCell align="center">{row.createdAt}</TableCell>
+                        </TableRow>
+                      );
+                    }
 
                     return (
                       <TableRow
@@ -678,16 +794,13 @@ const UserDetailsTable = ({ ...props }) => {
                           handleClick(event, row.username, row.id)
                         }
                         role="checkbox"
-                        aria-checked={isItemSelected}
                         tabIndex={-1}
-                        key={row.title}
-                        selected={isItemSelected}
+                        key={row.id}
                       >
                         <TableCell padding="checkbox">
-                          <Checkbox
-                            checked={isItemSelected}
-                            inputProps={{ "aria-labelledby": labelId }}
-                          />
+                          <Typography className={classes.iconStyles}>
+                            <Edit3 onClick={() => startEditing(row)} />
+                          </Typography>
                         </TableCell>
                         <TableCell
                           component="th"

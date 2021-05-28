@@ -9,10 +9,13 @@ export function* handleSetupProfile(action) {
     const {
       data: { profile, as, error },
     } = response;
+    console.log("The response: ", profile, as, error);
     if (error) throw new Error();
     yield put(loginAction(token, profile, as));
   } catch (error) {
-    console.log("[error log]: ", error);
-    yield put(logoutAction());
+    if (error.response?.status === 401) {
+      yield put(logoutAction());
+    }
+    console.log("[error log]: ", error, error.response);
   }
 }

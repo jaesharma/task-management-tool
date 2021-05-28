@@ -11,6 +11,7 @@ const authReducer = (state = initialState, action) => {
   switch (action.type) {
     case LOGGED_IN: {
       const { profile, as } = action.payload;
+      console.log("from reducer: ", profile, as);
       return {
         isAuthenticated: true,
         as,

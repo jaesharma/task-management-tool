@@ -4,23 +4,38 @@ import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
 import { Users, LogOut } from "react-feather";
 import { logoutAction } from "../../actions/authActions";
-import { connect } from "react-redux";
+import { useDispatch } from "react-redux";
 import { Tooltip } from "@material-ui/core";
 import { useConfirm } from "material-ui-confirm";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faUserTag } from "@fortawesome/free-solid-svg-icons";
 import { useHistory } from "react-router";
+import { logout } from "../../utility/utilityFunctions/apiCalls";
+import { setModalStateAction } from "../../actions/modalActions";
 
 const MainListItems = ({ active, ...props }) => {
   const confirmation = useConfirm();
   const history = useHistory();
-  const logout = () => {
+  const dispatch = useDispatch();
+  const logoutHandler = () => {
     confirmation({
       description: "You will be logged out.",
       confirmationText: "Logout",
     })
       .then(() => {
-        props.logout();
+        logout()
+          .then(() => {
+            dispatch(logoutAction());
+          })
+          .catch((error) => {
+            dispatch(
+              setModalStateAction({
+                showModal: true,
+                text: "Something went wrong.",
+                severity: "error",
+              })
+            );
+          });
       })
       .catch((_) => {});
   };
@@ -63,7 +78,7 @@ const MainListItems = ({ active, ...props }) => {
         </ListItem>
       </Tooltip>
       <Tooltip title="logout">
-        <ListItem button onClick={() => logout()}>
+        <ListItem button onClick={() => logoutHandler()}>
           <ListItemIcon>
             <LogOut />
           </ListItemIcon>
@@ -74,12 +89,4 @@ const MainListItems = ({ active, ...props }) => {
   );
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    logout: () => {
-      dispatch(logoutAction());
-    },
-  };
-};
-
-export default connect(null, mapDispatchToProps)(MainListItems);
+export default MainListItems;

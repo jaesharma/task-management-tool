@@ -31,7 +31,7 @@ router.post("/login", async (req, res) => {
     let adminObj = admin.toObject();
     delete adminObj.tokens;
     res.json({
-      admin: adminObj,
+      user: adminObj,
       token,
     });
   } catch (error) {

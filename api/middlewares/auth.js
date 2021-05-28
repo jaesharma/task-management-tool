@@ -4,6 +4,7 @@ const { User, Admin } = require("../models/index");
 const auth = async (req, res, next) => {
   try {
     const token = req.header("Authorization").replace("Bearer ", "");
+    if (!token || token === "null") return res.status(401).send();
     const decode = await jwt.verify(token, process.env.JWT_SECRET);
     let { _id, as } = decode;
     as = as.toLowerCase().trim();
