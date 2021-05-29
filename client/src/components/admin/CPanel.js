@@ -109,7 +109,7 @@ const useStyles = makeStyles((theme) => ({
 const renderTab = (tab, actions) => {
   switch (tab) {
     case "users":
-      return <UsersPage setInviteUserDialog={actions.setInviteUserDialog} />;
+      return <UsersPage {...actions} />;
     case "roles":
       return <RolePage />;
   }
@@ -211,7 +211,8 @@ const CPanel = (props) => {
         <div className={classes.appBarSpacer} />
         <Container maxWidth="lg" className={classes.container}>
           {renderTab(tab, {
-            setInviteUserDialog: setInviteUserDialog,
+            inviteUserDialog,
+            setInviteUserDialog,
           })}
         </Container>
       </main>

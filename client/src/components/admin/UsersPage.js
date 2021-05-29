@@ -26,7 +26,7 @@ const UsersPage = (props) => {
           </Button>
         </Grid>
       </Grid>
-      <UserDetailsTable />
+      <UserDetailsTable inviteUserDialog={props.inviteUserDialog} />
     </>
   );
 };

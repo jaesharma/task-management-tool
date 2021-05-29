@@ -327,7 +327,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const UserDetailsTable = ({ ...props }) => {
+const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
   const classes = useStyles();
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(1);
@@ -382,25 +382,16 @@ const UserDetailsTable = ({ ...props }) => {
   };
 
   useEffect(() => {
+    setUsers([]);
+    setPage(0);
+    fetchAndSetUsers({ refetch: true });
+  }, [`${inviteUserDialog}`]);
+
+  useEffect(() => {
     if (users.length >= (page + 1) * rowsPerPage || users.length >= total)
       return;
     //fetch users
-    getUsers({
-      order,
-      orderBy: orderBy === "User" ? "username" : orderBy,
-      limit: (page + 1) * rowsPerPage - users.length,
-      skip: users.length,
-    })
-      .then((resp) => {
-        const updatedUsers = [...users, ...resp.data.users];
-        setTotal(resp.data.total);
-        setUsers(updatedUsers);
-      })
-      .catch((error) => {
-        if (error.response && error.response.data && error.response.data.error)
-          props.setModalState(true, error.response.data.error, "error");
-        else props.setModalState(true, "Something went wrong!", "error");
-      });
+    fetchAndSetUsers();
   }, [page, orderBy, order, rowsPerPage]);
 
   useEffect(() => {
@@ -453,6 +444,34 @@ const UserDetailsTable = ({ ...props }) => {
         console.log(error, error.response);
       });
   }, []);
+
+  const fetchAndSetUsers = (args) => {
+    getUsers({
+      order,
+      orderBy: orderBy === "User" ? "username" : orderBy,
+      limit:
+        args && args.refetch
+          ? (page + 1) * rowsPerPage
+          : (page + 1) * rowsPerPage - users.length,
+      skip: args && args.refetch ? 0 : users.length,
+    })
+      .then((resp) => {
+        let updatedUsers = [];
+        if (args && args.refetch) {
+          updatedUsers = [...resp.data.users];
+        } else {
+          updatedUsers = [...users, ...resp.data.users];
+        }
+
+        setTotal(resp.data.total);
+        setUsers(updatedUsers);
+      })
+      .catch((error) => {
+        if (error.response && error.response.data && error.response.data.error)
+          props.setModalState(true, error.response.data.error, "error");
+        else props.setModalState(true, "Something went wrong!", "error");
+      });
+  };
 
   const handleRequestSort = (_event, property) => {
     if (users.length < total) setUsers([]);
@@ -529,7 +548,6 @@ const UserDetailsTable = ({ ...props }) => {
   };
 
   const startEditing = (row) => {
-    console.log(row);
     setEditRow(row.id);
     setEditingRow(row);
   };

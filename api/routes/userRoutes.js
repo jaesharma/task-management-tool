@@ -15,7 +15,7 @@ router.get("/", auth, async (req, res) => {
     let { order, orderBy = "username", limit, skip = 0 } = req.query;
     limit = +limit;
     skip = +skip;
-    if (!limit) limit = 5;
+    if (!limit || limit < 0) limit = 5;
     const users = await User.aggregate([
       {
         $lookup: {
