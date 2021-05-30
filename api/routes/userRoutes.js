@@ -12,11 +12,24 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 router.get("/", auth, async (req, res) => {
   try {
-    let { order, orderBy = "username", limit, skip = 0 } = req.query;
+    let { order, orderBy = "username", limit, skip = 0, search } = req.query;
     limit = +limit;
     skip = +skip;
     if (!limit || limit < 0) limit = 5;
+    const optionalMatches = [];
+
+    if (search && search.length) {
+      optionalMatches.push({
+        $match: {
+          username: {
+            $regex: new RegExp(`^(${search})`),
+          },
+        },
+      });
+    }
+
     const users = await User.aggregate([
+      ...optionalMatches,
       {
         $lookup: {
           from: "userroles",
@@ -46,12 +59,19 @@ router.get("/", auth, async (req, res) => {
         $limit: limit,
       },
     ]);
-    const total = await User.count();
+    let total;
+    if (search && search.length) {
+      total = await User.find({ username: new RegExp(`^(${search})`) }).count();
+    } else {
+      total = await User.count();
+    }
+
     res.send({
       users,
       total,
     });
   } catch (error) {
+    console.log(error);
     res.status(500).send({ error: "Internal Server Error" });
   }
 });
@@ -312,6 +332,51 @@ router.patch("/:uid", authAsAdmin, async (req, res) => {
     res.send({ user: updatedUser });
   } catch (error) {
     console.log(error);
+    if (error.name === "ValidationError") {
+      return res.status(400).send({ error: error.message });
+    }
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.get("/csv", authAsAdmin, async (req, res) => {
+  try {
+    let { users, roles } = req.query;
+    roles = roles.map((role) => {
+      if (!ObjectId.isValid(role))
+        res.status(400).send({ error: "Invalid role id." });
+      return mongoose.Types.ObjectId(role);
+    });
+    let fetchedUsers = [];
+    if (users === "all") {
+      fetchedUsers = await User.find({}).populate("role");
+    }
+    if (users === "selected") {
+      fetchedUsers = await User.aggregate([
+        {
+          $match: {
+            userRole: {
+              $in: roles,
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: "userroles",
+            as: "userRole",
+            localField: "userRole",
+            foreignField: "_id",
+          },
+        },
+        {
+          $unwind: "$userRole",
+        },
+      ]);
+    }
+    res.send(fetchedUsers);
+  } catch (error) {
     if (error.name === "ValidationError") {
       return res.status(400).send({ error: error.message });
     }

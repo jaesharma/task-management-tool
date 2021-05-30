@@ -21,6 +21,7 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 import MainListItems from "./MainListItems";
 import UserDetailsTable from "../tables/UserDetailsTable";
 import InviteUserDialog from "../dialogs/InviteUserDialog";
+import ExportCSVDialog from "../dialogs/ExportCSVDialog";
 import { useHistory } from "react-router";
 import RolePage from "./RolePage";
 import UsersPage from "./UsersPage";
@@ -120,6 +121,7 @@ const CPanel = (props) => {
   const [open, setOpen] = React.useState(true);
   const [tab, setTab] = useState("users");
   const [inviteUserDialog, setInviteUserDialog] = useState(false);
+  const [exportCSVDialog, setExportCSVDialog] = useState(false);
   const history = useHistory();
 
   useEffect(() => {
@@ -145,10 +147,19 @@ const CPanel = (props) => {
         <InviteUserDialog
           open={inviteUserDialog}
           handleClose={() => {
-            setInviteUserDialog((prev) => false);
+            setInviteUserDialog(false);
           }}
         />
       )}
+      {exportCSVDialog && (
+        <ExportCSVDialog
+          open={exportCSVDialog}
+          handleClose={() => {
+            setExportCSVDialog(false);
+          }}
+        />
+      )}
+
       <AppBar
         position="absolute"
         className={clsx(classes.appBar, open && classes.appBarShift)}
@@ -213,6 +224,7 @@ const CPanel = (props) => {
           {renderTab(tab, {
             inviteUserDialog,
             setInviteUserDialog,
+            setExportCSVDialog,
           })}
         </Container>
       </main>

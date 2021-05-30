@@ -1,3 +1,4 @@
+import qs from "qs";
 import axios from "../axios/apiInstance";
 
 let configs = {
@@ -15,10 +16,10 @@ const setConfigs = () => {
   };
 };
 
-export const getUsers = async ({ order, orderBy, limit, skip }) => {
+export const getUsers = async ({ order, orderBy, limit, skip, search }) => {
   setConfigs();
   return axios.get(
-    `/users/?order=${order}&orderBy=${orderBy}&limit=${limit}&skip=${skip}`,
+    `/users/?order=${order}&orderBy=${orderBy}&limit=${limit}&skip=${skip}&search=${search}`,
     configs
   );
 };
@@ -66,4 +67,20 @@ export const updateUser = ({ uid, roleId }) => {
 export const logout = () => {
   setConfigs();
   return axios.post("/logout", {}, configs);
+};
+
+export const getCsvData = ({ users, selected_roles: roles }) => {
+  setConfigs();
+  const params = {
+    users,
+    roles,
+  };
+
+  return axios.get("/users/csv", {
+    ...configs,
+    params,
+    paramsSerializer: (params) => {
+      return qs.stringify(params);
+    },
+  });
 };

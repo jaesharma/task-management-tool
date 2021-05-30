@@ -18,6 +18,7 @@ import {
   Avatar,
   Button,
   CircularProgress,
+  Tooltip,
 } from "@material-ui/core";
 import moment from "moment";
 import { connect } from "react-redux";
@@ -385,7 +386,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
     setUsers([]);
     setPage(0);
     fetchAndSetUsers({ refetch: true });
-  }, [`${inviteUserDialog}`]);
+  }, [`${inviteUserDialog}`, searchText]);
 
   useEffect(() => {
     if (users.length >= (page + 1) * rowsPerPage || users.length >= total)
@@ -413,27 +414,32 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
         createdAt,
         updatedAt,
       } = user;
-      dataRows.push(
-        createData(
-          _id,
-          username,
-          name,
-          avatar,
-          email,
-          projects.length,
-          assigned.length,
-          teams.length,
-          userRole,
-          lastActivity !== "-"
-            ? new moment(lastActivity).format("YYYY, MMM DD")
-            : "-",
-          new moment(createdAt).format("YYYY, MMM DD"),
-          new moment(updatedAt).format("YYYY, MMM DD")
-        )
-      );
+      if (
+        !searchText.trim().length ||
+        username.toLowerCase().startsWith(searchText.trim().toLowerCase())
+      ) {
+        dataRows.push(
+          createData(
+            _id,
+            username,
+            name,
+            avatar,
+            email,
+            projects.length,
+            assigned.length,
+            teams.length,
+            userRole,
+            lastActivity !== "-"
+              ? new moment(lastActivity).format("YYYY, MMM DD")
+              : "-",
+            new moment(createdAt).format("YYYY, MMM DD"),
+            new moment(updatedAt).format("YYYY, MMM DD")
+          )
+        );
+      }
     });
     setRows(dataRows);
-  }, [users, searchText]);
+  }, [users]);
 
   useEffect(() => {
     getUserRoles()
@@ -454,6 +460,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
           ? (page + 1) * rowsPerPage
           : (page + 1) * rowsPerPage - users.length,
       skip: args && args.refetch ? 0 : users.length,
+      search: searchText,
     })
       .then((resp) => {
         let updatedUsers = [];
@@ -877,9 +884,19 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                             </Grid>
                           </NavLink>
                         </TableCell>
-                        <TableCell size="small">
-                          {row.userRole.title.toUpperCase()}
-                        </TableCell>
+                        <Tooltip title={row.userRole.title} placement="right">
+                          <TableCell
+                            size="small"
+                            style={{
+                              maxWidth: "100px",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            {row.userRole.title.toUpperCase()}
+                          </TableCell>
+                        </Tooltip>
                         <TableCell align="center">
                           {row.projects + row.assigned}
                         </TableCell>
@@ -890,7 +907,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                         >
                           Resend invite
                         </TableCell>
-                        <TableCell align="center">{row.createdAt}</TableCell>
+                        <TableCell align="start">{row.createdAt}</TableCell>
                       </TableRow>
                     );
                   })}
