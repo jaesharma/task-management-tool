@@ -47,7 +47,6 @@ function createData(
   avatar,
   email,
   projects,
-  assigned,
   teams,
   userRole,
   lastActivity,
@@ -61,7 +60,6 @@ function createData(
     avatar,
     email,
     projects,
-    assigned,
     teams,
     userRole,
     lastActivity,
@@ -407,7 +405,6 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
         email,
         about,
         projects,
-        assigned,
         teams,
         userRole,
         lastActivity,
@@ -426,7 +423,6 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
             avatar,
             email,
             projects.length,
-            assigned.length,
             teams.length,
             userRole,
             lastActivity !== "-"
@@ -672,15 +668,15 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                         </Grid>
                       </TableCell>
 
-                      <TableCell align="right">{row.userRole}</TableCell>
-                      <TableCell align="right">{row.lastActivity}</TableCell>
-                      <TableCell align="right">
+                      <TableCell>{row.userRole}</TableCell>
+                      <TableCell>{row.lastActivity}</TableCell>
+                      <TableCell>
                         <Skeleton />
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell>
                         <Skeleton />
                       </TableCell>
-                      <TableCell align="right">{row.createdAt}</TableCell>
+                      <TableCell>{row.createdAt}</TableCell>
                     </TableRow>
                   );
                 })}
@@ -795,9 +791,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                               </Select>
                             </FormControl>
                           </TableCell>
-                          <TableCell align="center">
-                            {row.projects + row.assigned}
-                          </TableCell>
+                          <TableCell align="center">{row.projects}</TableCell>
                           <TableCell align="center">
                             {row.lastActivity}
                           </TableCell>
@@ -897,9 +891,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                             {row.userRole.title.toUpperCase()}
                           </TableCell>
                         </Tooltip>
-                        <TableCell align="center">
-                          {row.projects + row.assigned}
-                        </TableCell>
+                        <TableCell align="center">{row.projects}</TableCell>
                         <TableCell align="center">{row.lastActivity}</TableCell>
                         <TableCell
                           className={classes.link}

@@ -17,10 +17,24 @@ const taskSchema = new Schema(
         required: true,
       },
     ],
-    assignee: {
-      type: mongoose.Types.ObjectId,
-      ref: "User",
-    },
+    assignee: [
+      {
+        to: {
+          type: mongoose.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        by: {
+          type: mongoose.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        when: {
+          type: String,
+          required: true,
+        },
+      },
+    ],
     reporter: {
       type: mongoose.Types.ObjectId,
       ref: "User",
@@ -40,6 +54,12 @@ const taskSchema = new Schema(
       {
         type: mongoose.Types.ObjectId,
         ref: "Comment",
+      },
+    ],
+    subtasks: [
+      {
+        type: mongoose.Types.ObjectId,
+        ref: "Subtask",
       },
     ],
   },

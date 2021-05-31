@@ -4,7 +4,8 @@ import { connect } from "react-redux";
 
 const Dashboard = ({ isAuthenticated, as }) => {
   if (isAuthenticated && as === "admin") return <Redirect to="/cpanel" />;
-  else if (isAuthenticated && as === "user") return <Redirect to="/projects" />;
+  else if (isAuthenticated && as === "user")
+    return <Redirect to="/user/dashboard" />;
   else {
     return <Redirect to="/user/login" />;
   }

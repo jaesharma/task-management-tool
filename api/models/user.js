@@ -64,29 +64,6 @@ const userSchema = new Schema(
         required: true,
       },
     ],
-    assigned: [
-      {
-        job: {
-          type: mongoose.Types.ObjectId,
-          required: true,
-          refPath: "jobModel",
-        },
-        jobModel: {
-          type: String,
-          required: true,
-          enum: ["Task", "SubTask"],
-        },
-        by: {
-          type: mongoose.Types.ObjectId,
-          ref: "User",
-          required: true,
-        },
-        when: {
-          type: String,
-          required: true,
-        },
-      },
-    ],
     teams: [
       {
         type: mongoose.Types.ObjectId,

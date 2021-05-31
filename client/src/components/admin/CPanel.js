@@ -12,14 +12,11 @@ import {
   IconButton,
   Badge,
   Container,
-  Button,
-  Grid,
 } from "@material-ui/core";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import MenuIcon from "@material-ui/icons/Menu";
 import NotificationsIcon from "@material-ui/icons/Notifications";
 import MainListItems from "./MainListItems";
-import UserDetailsTable from "../tables/UserDetailsTable";
 import InviteUserDialog from "../dialogs/InviteUserDialog";
 import ExportCSVDialog from "../dialogs/ExportCSVDialog";
 import { useHistory } from "react-router";

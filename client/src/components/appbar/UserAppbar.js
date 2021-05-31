@@ -271,7 +271,6 @@ const UserAppbar = () => {
                 style={{
                   width: "100%",
                 }}
-                onClick={() => setOpen(!open)}
               >
                 Task Management Portal
               </Typography>

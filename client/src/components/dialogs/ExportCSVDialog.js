@@ -177,33 +177,8 @@ const ExportCSVDialog = ({ open, handleClose, ...props }) => {
 
   const submitHandler = (e) => {
     e.preventDefault();
-    // setExporting(true);
-    // props.setStaticModal(true, "Generating new credentials...");
-    console.log(formValues);
-    const data = [
-      {
-        name: "Test 1",
-        age: 13,
-        average: 8.2,
-        approved: true,
-        description: "using 'Content here, content here' ",
-      },
-      {
-        name: "Test 2",
-        age: 11,
-        average: 8.2,
-        approved: true,
-        description: "using 'Content here, content here' ",
-      },
-      {
-        name: "Test 4",
-        age: 10,
-        average: 8.2,
-        approved: true,
-        description: "using 'Content here, content here' ",
-      },
-    ];
-
+    setExporting(true);
+    props.setStaticModal(true, "Exporting CSV file...");
     const headers = ["id", "name", "email", "created", "lastActivity", "role"];
     if (formValues.permissions) headers.push("permissions");
     if (formValues.projects_working_on) headers.push("projects_working_on");
@@ -231,8 +206,9 @@ const ExportCSVDialog = ({ open, handleClose, ...props }) => {
 
     getCsvData(args)
       .then((resp) => {
+        setExporting(false);
+        props.setStaticModal(false, "");
         const fetchedData = resp.data;
-        console.log(resp, fetchedData)
         const data = fetchedData.map((user) => {
           let rolePermissions = "";
           const {
@@ -251,16 +227,24 @@ const ExportCSVDialog = ({ open, handleClose, ...props }) => {
             userObj["permissions"] = rolePermissions;
           }
           if (formValues.projects_working_on) {
-            userObj["projects_working_on"] =
-              user.assigned.length + user.projects.length;
+            userObj["projects_working_on"] = user.projects.length;
           }
           return userObj;
         });
-        console.log("datafile: ", data);
         csvExporter.generateCsv(data);
+        handleClose();
       })
       .catch((error) => {
-        console.log("[Error]: ", error, error.response);
+        setExporting(false);
+        props.setStaticModal(false, "");
+        props.setStaticModal(false, "");
+        if (error.response?.data?.error)
+          return props.setModalState(true, error.response.data.error, "error");
+        props.setModalState(
+          true,
+          "Something went wrong. Try again later.",
+          "error"
+        );
       });
 
     // const { email, role } = formValues;

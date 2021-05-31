@@ -7,6 +7,7 @@ import Subtask from "./subtask";
 import Team from "./team";
 import User from "./user";
 import Comment from "./comment";
+import Column from "./column";
 import UserRole from "./userRole";
 
 export {
@@ -20,4 +21,5 @@ export {
   User,
   UserRole,
   Comment,
+  Column,
 };

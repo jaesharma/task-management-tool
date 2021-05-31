@@ -20,7 +20,6 @@ export const loginAdminAction = (token, profile) => {
 
 export const loginAction = (token, profile, as) => {
   localStorage.setItem("authToken", token);
-  console.log(profile, as);
   return {
     type: LOGGED_IN,
     payload: {

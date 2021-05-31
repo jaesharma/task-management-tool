@@ -84,3 +84,13 @@ export const getCsvData = ({ users, selected_roles: roles }) => {
     },
   });
 };
+
+export const getProjects = () => {
+  setConfigs();
+  return axios.get(`/projects`, configs);
+};
+
+export const createProject = ({ title }) => {
+  setConfigs();
+  return axios.post("/projects", { title }, configs);
+};

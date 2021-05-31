@@ -1,6 +1,7 @@
 import express from "express";
 import auth from "../middlewares/auth";
 import authAsAdmin from "../middlewares/authAsAdmin";
+import authAsUser from "../middlewares/authAsUser";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { Admin, User, UserRole } from "../models/index";
@@ -343,7 +344,7 @@ router.patch("/:uid", authAsAdmin, async (req, res) => {
 
 router.get("/csv", authAsAdmin, async (req, res) => {
   try {
-    let { users, roles } = req.query;
+    let { users, roles = [] } = req.query;
     roles = roles.map((role) => {
       if (!ObjectId.isValid(role))
         res.status(400).send({ error: "Invalid role id." });
@@ -351,7 +352,7 @@ router.get("/csv", authAsAdmin, async (req, res) => {
     });
     let fetchedUsers = [];
     if (users === "all") {
-      fetchedUsers = await User.find({}).populate("role");
+      fetchedUsers = await User.find({}).populate("userRole");
     }
     if (users === "selected") {
       fetchedUsers = await User.aggregate([
