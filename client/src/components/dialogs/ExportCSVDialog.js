@@ -246,26 +246,6 @@ const ExportCSVDialog = ({ open, handleClose, ...props }) => {
           "error"
         );
       });
-
-    // const { email, role } = formValues;
-    // inviteUser(email, role._id)
-    //   .then((resp) => {
-    //     setInviting(false);
-    //     props.setStaticModal(false, "");
-    //     props.setModalState(true, "New credentails sent to user.", "success");
-    //     handleClose();
-    //   })
-    //   .catch((error) => {
-    //     setInviting(false);
-    //     props.setStaticModal(false, "");
-    //     if (error.response && error.response.data && error.response.data.error)
-    //       return props.setModalState(true, error.response.data.error, "error");
-    //     props.setModalState(
-    //       true,
-    //       "Something went wrong. Try again later.",
-    //       "error"
-    //     );
-    //   });
   };
 
   const handleDelete = (id) => {

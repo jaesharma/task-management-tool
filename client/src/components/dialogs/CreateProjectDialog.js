@@ -18,6 +18,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { setCreateProjectDialogAction } from "../../actions/dialogActions";
 import { createProject } from "../../utility/utilityFunctions/apiCalls";
 import { useHistory } from "react-router";
+import keygen from "keygenerator";
 
 const useStyles = makeStyles((theme) => ({
   appBar: {
@@ -101,10 +102,22 @@ const CreateProjectDialog = () => {
   const [creating, setCreating] = useState(false);
   const [formValues, setFormValues] = useState({
     title: "",
+    key: keygen.session_id({ length: 4, forceUppercase: true }),
   });
 
+  useEffect(() => {
+    setFormValues({
+      ...formValues,
+      key: keygen._({ length: 4, forceUppercase: true }),
+    });
+  }, [open]);
+
   const changeHandler = (e) => {
-    setFormValues((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+    let { name, value } = e.target;
+    if (name === "key") {
+      value = value.toUpperCase().trim();
+    }
+    setFormValues((prev) => ({ ...prev, [name]: value }));
   };
 
   const handleClose = () => {
@@ -115,7 +128,7 @@ const CreateProjectDialog = () => {
   const submitHandler = (e) => {
     e.preventDefault();
     setCreating(true);
-    createProject({ title: formValues.title })
+    createProject({ title: formValues.title, key: formValues.key })
       .then((resp) => {
         const { project } = resp.data;
         dispatch(
@@ -204,6 +217,17 @@ const CreateProjectDialog = () => {
                 onChange={changeHandler}
                 required
               />
+              <label htmlFor="key" className={classes.label}>
+                Key*
+              </label>
+              <input
+                id="key"
+                name="key"
+                className={classes.inputBox}
+                value={formValues.key}
+                onChange={changeHandler}
+                required
+              />
               <Typography
                 className={classes.label}
                 style={{
@@ -248,7 +272,11 @@ const CreateProjectDialog = () => {
                     color: "white",
                     padding: ".2rem .4rem",
                   }}
-                  disabled={!!!formValues.title || creating}
+                  disabled={
+                    !!!formValues.title.trim() ||
+                    !!!formValues.key.trim() ||
+                    creating
+                  }
                 >
                   {creating ? (
                     <CircularProgress size={16} />

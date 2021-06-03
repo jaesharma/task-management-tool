@@ -59,9 +59,19 @@ const userSchema = new Schema(
     },
     projects: [
       {
-        type: mongoose.Types.ObjectId,
-        ref: "Project",
-        required: true,
+        project: {
+          type: mongoose.Types.ObjectId,
+          ref: "Project",
+          required: true,
+        },
+        key: {
+          type: String,
+          required: true,
+        },
+        starred: {
+          type: Boolean,
+          default: false,
+        },
       },
     ],
     teams: [

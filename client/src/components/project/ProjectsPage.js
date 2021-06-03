@@ -80,22 +80,15 @@ const ProjectsPage = (props) => {
             })
           );
         });
-      setLoading(false);
     }
   }, []);
-
-  if (loading) {
-    return (
-      <Grid container justify="center">
-        <CircularProgress />
-      </Grid>
-    );
-  }
 
   return (
     <Grid container direction="column" className={classes.container}>
       <Typography className={classes.t1}>Projects</Typography>
-      {projects.length ? (
+      {loading ? (
+        <CircularProgress size={18} />
+      ) : projects.length ? (
         <ProjectListTable />
       ) : (
         <Grid

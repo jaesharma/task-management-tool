@@ -1,9 +1,16 @@
-import { Grid, Typography, Button, makeStyles } from "@material-ui/core";
+import {
+  Grid,
+  Typography,
+  Button,
+  makeStyles,
+  CircularProgress,
+} from "@material-ui/core";
 import { NavLink, useHistory } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { setModalStateAction } from "../../actions/modalActions";
 import { useDispatch } from "react-redux";
 import { getProjects } from "../../utility/utilityFunctions/apiCalls";
+import ProjectCard from "../project/ProjectCard";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -50,15 +57,19 @@ const useStyles = makeStyles((theme) => ({
 const UserDashboard = () => {
   const classes = useStyles();
   const history = useHistory();
+  const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
   const dispatch = useDispatch();
 
   useEffect(() => {
     getProjects()
       .then((resp) => {
+        setLoading(false);
         setProjects(resp.data.projects);
       })
       .catch((error) => {
+        console.log(error);
+        setLoading(false);
         if (error.response?.data?.error)
           return dispatch(
             setModalStateAction({
@@ -71,7 +82,7 @@ const UserDashboard = () => {
           setModalStateAction({
             showModal: true,
             text: `Something went wrong`,
-            severity: "success",
+            severity: "error",
           })
         );
       });
@@ -81,19 +92,26 @@ const UserDashboard = () => {
     <Grid container direction="column" className={classes.container}>
       <Typography className={classes.mainTitle}>Your work</Typography>
       <Grid container direction="column" className={classes.subContainer}>
-        {projects.length ? (
-          <Grid
-            container
-            justify="space-between"
-            className={classes.rowContainer}
-          >
-            <Typography className={classes.subTitle}>
-              Recent projects
-            </Typography>
-            <NavLink to="/user/projects" className={classes.link}>
-              View all projects
-            </NavLink>
-          </Grid>
+        {loading ? (
+          <CircularProgress size={18} />
+        ) : projects.length ? (
+          <>
+            <Grid
+              container
+              justify="space-between"
+              className={classes.rowContainer}
+            >
+              <Typography className={classes.subTitle}>
+                Recent projects
+              </Typography>
+              <NavLink to="/user/projects" className={classes.link}>
+                View all projects
+              </NavLink>
+            </Grid>
+            {projects.map((project) => (
+              <ProjectCard project={project.project} />
+            ))}
+          </>
         ) : (
           <Grid
             container
@@ -119,11 +137,6 @@ const UserDashboard = () => {
             </Button>
           </Grid>
         )}
-        <Grid container>
-          <Typography>Project Cards</Typography>
-          <Typography>Project Cards</Typography>
-          <Typography>Project Cards</Typography>
-        </Grid>
       </Grid>
     </Grid>
   );

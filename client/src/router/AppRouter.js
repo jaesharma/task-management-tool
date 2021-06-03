@@ -23,6 +23,7 @@ const AppRouter = () => {
         <Route path="/" component={Dashboard} exact />
         <Route path="/user/login" component={Login} exact />
         <UserOnlyRoute path="/user" component={UserRouter} />
+        <UserOnlyRoute path="/projects" component={UserRouter} />
         <Route path="/admin/login" component={Login} exact />
         <Route path="/forgotpass" component={ForgotPasswordPage} exact />
         <AdminOnlyRoute path="/cpanel/:tab" component={CPanel} exact />

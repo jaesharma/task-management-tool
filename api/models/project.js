@@ -7,6 +7,9 @@ const projectSchema = new Schema(
       type: String,
       required: true,
     },
+    icon: {
+      type: String,
+    },
     columns: [
       {
         type: mongoose.Types.ObjectId,
@@ -19,6 +22,11 @@ const projectSchema = new Schema(
         type: String,
       },
     ],
+    lead: {
+      type: mongoose.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     members: [
       {
         member: {

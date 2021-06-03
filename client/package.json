@@ -15,6 +15,7 @@
     "@testing-library/user-event": "^12.8.3",
     "axios": "^0.21.1",
     "export-to-csv": "^0.2.1",
+    "keygenerator": "^1.0.4",
     "material-ui-confirm": "^2.1.2",
     "material-ui-dropzone": "^3.5.0",
     "moment": "^2.29.1",

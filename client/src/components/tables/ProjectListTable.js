@@ -20,51 +20,43 @@ import {
   CircularProgress,
   Tooltip,
 } from "@material-ui/core";
-import moment from "moment";
-import { connect, useDispatch } from "react-redux";
+import { useDispatch } from "react-redux";
 import {
   setModalStateAction,
   setStaticModalAction,
 } from "../../actions/modalActions";
-import { Check, Edit3 } from "react-feather";
+import { Star } from "react-feather";
 import { useConfirm } from "material-ui-confirm";
 import { NavLink } from "react-router-dom";
 import {
-  getUsers,
-  resendInvite,
-  getUserRoles,
-  updateUser,
+  getProjects,
+  starProject,
 } from "../../utility/utilityFunctions/apiCalls";
 import MenuItem from "@material-ui/core/MenuItem";
 import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
 import Skeleton from "@material-ui/lab/Skeleton";
 
 function createData(
   id,
-  username,
-  name,
-  avatar,
-  email,
-  projects,
-  teams,
-  userRole,
-  lastActivity,
-  createdAt,
-  updatedAt
+  title,
+  icon,
+  key,
+  starred,
+  members,
+  leadId,
+  leadName,
+  leadAvatar
 ) {
   return {
     id,
-    username,
-    name,
-    avatar,
-    email,
-    projects,
-    teams,
-    userRole,
-    lastActivity,
-    createdAt,
-    updatedAt,
+    title,
+    icon,
+    key,
+    starred,
+    members,
+    leadId,
+    leadName,
+    leadAvatar,
   };
 }
 
@@ -96,68 +88,58 @@ function stableSort(array, comparator) {
 
 const headCells = [
   {
-    id: "User",
+    id: "title",
     numeric: false,
     disablePadding: false,
-    label: "User",
+    label: "Title",
   },
   {
-    id: "role",
+    id: "key",
     numeric: false,
     disablePadding: false,
-    label: "Role",
+    label: "Key",
   },
   {
-    id: "projects-working-on",
+    id: "members",
     numeric: true,
     disablePadding: false,
-    label: "Projects working on",
+    label: "Members",
   },
   {
-    id: "last-activity",
-    numeric: true,
+    id: "lead",
+    numeric: false,
     disablePadding: false,
-    label: "Last activity",
-  },
-  { id: "action", numeric: false, disablePadding: false, label: "Action" },
-  {
-    id: "joined",
-    numeric: true,
-    disablePadding: false,
-    label: "Joined",
+    label: "Lead",
   },
 ];
 
 function EnhancedTableHead(props) {
-  const {
-    classes,
-    onSelectAllClick,
-    order,
-    orderBy,
-    numSelected,
-    rowCount,
-    onRequestSort,
-  } = props;
+  const { classes, order, orderBy, onRequestSort } = props;
   const createSortHandler = (property) => (event) => {
     onRequestSort(event, property);
   };
 
-  const allowSortOn = [
-    "user",
-    "role",
-    "projects-working-on",
-    "joined",
-    "last-activity",
-  ];
+  const allowSortOn = ["title", "key", "members"];
 
   return (
     <TableHead>
       <TableRow>
-        <TableCell padding="checkbox"></TableCell>
+        <TableCell padding="checkbox">
+          <Grid container justify="center">
+            <Star
+              size={14}
+              style={{
+                fill: "#5E6C85",
+                stroke: "#5E6C85",
+                paddingRight: ".4rem",
+              }}
+            />
+          </Grid>
+        </TableCell>
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
+            align={["title", "lead"].includes(headCell.id) ? "left" : "center"}
             padding={headCell.disablePadding ? "none" : "default"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -279,6 +261,7 @@ const useStyles = makeStyles((theme) => ({
   },
   paper: {
     width: "100%",
+    fontFamily: "Merriweather Sans",
     marginBottom: theme.spacing(2),
     [theme.breakpoints.down("sm")]: {
       width: "100%",
@@ -294,27 +277,33 @@ const useStyles = makeStyles((theme) => ({
     margin: -1,
     overflow: "hidden",
     padding: 0,
+    fontFamily: "Merriweather Sans",
     position: "absolute",
     top: 20,
     width: 1,
   },
   titleLink: {
-    color: "black",
+    color: "blue",
+    fontFamily: "Merriweather Sans",
     textDecoration: "none",
-    "&:hover": {
-      color: "blue",
-    },
   },
   iconCell: {
     "&:hover": {
       cursor: "pointer",
     },
   },
+  starred: {
+    fill: "#F5AB00",
+    stroke: "#F5AB00",
+  },
+  star: {
+    stroke: "#bbb",
+  },
   link: {
-    color: "black",
     textDecoration: "none",
+    color: "blue",
+    fontFamily: "Merriweather Sans",
     "&:hover": {
-      color: "blue",
       cursor: "pointer",
     },
   },
@@ -324,10 +313,311 @@ const useStyles = makeStyles((theme) => ({
       cursor: "pointer",
     },
   },
+  avatarStyles: {
+    width: theme.spacing(3),
+    height: theme.spacing(3),
+  },
 }));
 
 const ProjectListTable = () => {
-  return <div>abv</div>;
+  const classes = useStyles();
+  const dispatch = useDispatch();
+  const [projects, setProjects] = useState([]);
+  const [total, setTotal] = useState(1);
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("username");
+  const [page, setPage] = useState(0);
+  const [dense, setDense] = useState(false);
+  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rows, setRows] = useState([]);
+  const [searchText, setSearchText] = useState("");
+  const confirmation = useConfirm();
+
+  useEffect(() => {
+    getProjects()
+      .then((resp) => {
+        setProjects(resp.data.projects);
+      })
+      .catch((error) => {
+        if (error.response?.data?.error)
+          return dispatch(
+            setModalStateAction({
+              showModal: true,
+              text: error.response.data.error,
+              severity: "error",
+            })
+          );
+        dispatch(
+          setModalStateAction({
+            showModal: true,
+            text: "Something went wrong!",
+            severity: "error",
+          })
+        );
+      });
+  }, []);
+
+  useEffect(() => {
+    const dataRows = [];
+    projects.forEach((project) => {
+      let { _id, title, icon } = project.project;
+      const {
+        _id: leadId,
+        name: leadName,
+        avatar: leadAvatar,
+      } = project.project.lead;
+      dataRows.push(
+        createData(
+          _id,
+          title,
+          icon,
+          project.key,
+          project.starred,
+          project.project.members.length,
+          leadId,
+          leadName,
+          leadAvatar
+        )
+      );
+    });
+    setRows(dataRows);
+  }, [projects]);
+
+  const handleRequestSort = (_event, property) => {
+    if (projects.length < total) setProjects([]);
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
+
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage);
+  };
+
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(parseInt(event.target.value, 10));
+    setPage(0);
+  };
+
+  const searchChangeHandler = (e) => {
+    setSearchText(e.target.value);
+  };
+
+  const starClickHandler = (projectId, index) => {
+    starProject(projectId)
+      .then((resp) => {
+        console.log(resp)
+        const updatedProjects = [...projects];
+        updatedProjects[index] = resp.data.project;
+        setProjects(updatedProjects);
+      })
+      .catch((error) => {
+        console.log(error)
+        if (error.response?.data?.error)
+          return dispatch(
+            setModalStateAction({
+              showModal: true,
+              text: error.response.data.error,
+              severity: "error",
+            })
+          );
+        dispatch(
+          setModalStateAction({
+            showModal: true,
+            text: "Something went wrong. Try again later",
+            severity: "error",
+          })
+        );
+      });
+  };
+
+  const renderSkeleton = () => {
+    const skeletonRows = [];
+    for (let i = 0; i < rowsPerPage; i++) {
+      // skeletonRows.push(<Skeleton />);
+      skeletonRows.push(
+        createData(
+          <Skeleton />,
+          <Skeleton />,
+          <Skeleton />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton height={40} />,
+          <Skeleton />
+        )
+      );
+    }
+    return skeletonRows;
+  };
+
+  const emptyRows =
+    rowsPerPage - Math.min(rowsPerPage, rows.length - page * rowsPerPage);
+
+  return (
+    <div className={classes.root}>
+      <Paper className={classes.paper}>
+        <EnhancedTableToolbar
+          projects={projects}
+          searchChangeHandler={searchChangeHandler}
+        />
+        <TableContainer>
+          <Table
+            className={classes.table}
+            aria-labelledby="tableTitle"
+            size={dense ? "small" : "medium"}
+            aria-label="enhanced table"
+          >
+            <EnhancedTableHead
+              classes={classes}
+              order={order}
+              orderBy={orderBy}
+              onRequestSort={handleRequestSort}
+              rowCount={rows.length}
+            />
+            <TableBody>
+              {stableSort(
+                rows,
+                getComparator(order, orderBy === "User" ? "username" : orderBy)
+              )
+                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+                .map((row, index) => {
+                  const labelId = `enhanced-table-checkbox-${index}`;
+                  return (
+                    <TableRow hover role="checkbox" tabIndex={-1} key={row.id}>
+                      <TableCell
+                        padding="checkbox"
+                        onClick={() => starClickHandler(row.id, index)}
+                      >
+                        <Typography className={classes.iconStyles}>
+                          <Star
+                            size={18}
+                            className={
+                              row.starred ? classes.starred : classes.star
+                            }
+                          />
+                        </Typography>
+                      </TableCell>
+                      <TableCell
+                        component="th"
+                        id={labelId}
+                        scope="row"
+                        padding="none"
+                        style={{
+                          paddingLeft: "1rem",
+                          maxWidth: "4rem",
+                        }}
+                      >
+                        <NavLink
+                          to={`/projects/${row.id}`}
+                          className={classes.titleLink}
+                        >
+                          <Grid
+                            container
+                            direction="row"
+                            alignItems="center"
+                            style={{
+                              flexWrap: "nowrap",
+                              whiteSpace: "nowrap",
+                              overflow: "hidden",
+                              textOverflow: "ellipsis",
+                            }}
+                          >
+                            <Avatar
+                              className={classes.avatarStyles}
+                              src={row.icon}
+                              variant="rounded"
+                            />
+                            <Typography
+                              style={{
+                                paddingLeft: ".7rem",
+                                fontFamily: "Merriweather Sans",
+                              }}
+                            >
+                              {row.title}
+                            </Typography>
+                          </Grid>
+                        </NavLink>
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        size="small"
+                        style={{
+                          maxWidth: "50px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          fontFamily: "Merriweather Sans",
+                        }}
+                      >
+                        {row.key}
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        style={{
+                          maxWidth: "1rem",
+                        }}
+                      >
+                        {row.members}
+                      </TableCell>
+                      <TableCell>
+                        <NavLink
+                          to={`/users/${row.leadId}`}
+                          className={classes.titleLink}
+                        >
+                          <Grid
+                            container
+                            direction="row"
+                            style={{
+                              flexWrap: "nowrap",
+                            }}
+                          >
+                            <Grid item xs={1}>
+                              <Avatar
+                                className={classes.avatarStyles}
+                                src={row.leadAvatar}
+                              />
+                            </Grid>
+                            <Grid item xs={11}>
+                              <Typography
+                                style={{
+                                  fontFamily: "Merriweather Sans",
+                                  paddingLeft: ".4rem",
+                                }}
+                              >
+                                {row.leadName}
+                              </Typography>
+                            </Grid>
+                          </Grid>
+                        </NavLink>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
+              {emptyRows > 0 && (
+                <TableRow style={{ height: (dense ? 33 : 53) * emptyRows }}>
+                  <TableCell colSpan={6} />
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </TableContainer>
+        <TablePagination
+          rowsPerPageOptions={[5, 10, 25]}
+          component="div"
+          count={total}
+          rowsPerPage={rowsPerPage}
+          page={page}
+          onChangePage={handleChangePage}
+          onChangeRowsPerPage={handleChangeRowsPerPage}
+        />
+      </Paper>
+    </div>
+  );
 };
 
 export default ProjectListTable;

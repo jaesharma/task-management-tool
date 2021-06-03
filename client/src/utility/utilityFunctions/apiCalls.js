@@ -90,7 +90,17 @@ export const getProjects = () => {
   return axios.get(`/projects`, configs);
 };
 
-export const createProject = ({ title }) => {
+export const createProject = ({ title, key }) => {
   setConfigs();
-  return axios.post("/projects", { title }, configs);
+  return axios.post("/projects", { title, key }, configs);
+};
+
+export const starProject = (projectId) => {
+  setConfigs();
+  return axios.post("/projects/star", { projectId }, configs);
+};
+
+export const getProjectById = (pid) => {
+  setConfigs();
+  return axios.get(`/projects/${pid}`, configs);
 };

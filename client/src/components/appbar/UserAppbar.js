@@ -28,6 +28,7 @@ import {
 import { Divide } from "react-feather";
 import { logoutAction } from "../../actions/authActions";
 import { setModalStateAction } from "../../actions/modalActions";
+import { NavLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   grow: {
@@ -264,16 +265,24 @@ const UserAppbar = () => {
         <Toolbar className={classes.customToolbar} disableGutters>
           <Grid container alignItems="center" style={{ flexWrap: "nowrap" }}>
             <Grid item xs={3}>
-              <Typography
-                className={classes.title}
-                variant="h6"
-                noWrap
+              <NavLink
+                to="/"
                 style={{
-                  width: "100%",
+                  color: "#000",
+                  textDecoration: "none",
                 }}
               >
-                Task Management Portal
-              </Typography>
+                <Typography
+                  className={classes.title}
+                  variant="h6"
+                  noWrap
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  Task Management Portal
+                </Typography>
+              </NavLink>
             </Grid>
             <Grid item xs={9} container justify="flex-end" alignItems="center">
               <div className={classes.search}>
