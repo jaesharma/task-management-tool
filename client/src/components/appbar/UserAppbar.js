@@ -260,8 +260,13 @@ const UserAppbar = () => {
   };
 
   return (
-    <div className={classes.grow}>
-      <AppBar position="static">
+    <div
+      className={classes.grow}
+      style={{
+        marginBottom: "3.4rem",
+      }}
+    >
+      <AppBar position="fixed">
         <Toolbar className={classes.customToolbar} disableGutters>
           <Grid container alignItems="center" style={{ flexWrap: "nowrap" }}>
             <Grid item xs={3}>
@@ -284,7 +289,8 @@ const UserAppbar = () => {
                 </Typography>
               </NavLink>
             </Grid>
-            <Grid item xs={9} container justify="flex-end" alignItems="center">
+            <Grid item xs={5} container></Grid>
+            <Grid item xs={4} container justify="flex-end" alignItems="center">
               <div className={classes.search}>
                 <div className={classes.searchIcon}>
                   <SearchIcon />

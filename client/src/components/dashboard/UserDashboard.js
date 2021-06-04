@@ -8,9 +8,14 @@ import {
 import { NavLink, useHistory } from "react-router-dom";
 import React, { useEffect, useState } from "react";
 import { setModalStateAction } from "../../actions/modalActions";
-import { useDispatch } from "react-redux";
-import { getProjects } from "../../utility/utilityFunctions/apiCalls";
+import { updateProjectAction } from "../../actions/userInfoActions";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  getProjects,
+  starProject,
+} from "../../utility/utilityFunctions/apiCalls";
 import ProjectCard from "../project/ProjectCard";
+import { Star } from "react-feather";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -32,6 +37,12 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Merriweather Sans",
     fontWeight: 400,
   },
+  menuText: {
+    fontSize: ".9rem",
+    fontFamily: "Merriweather Sans",
+    fontWeight: 400,
+    color: "#47526E",
+  },
   link: {
     color: "#4273FD",
     fontSize: ".9rem",
@@ -48,18 +59,45 @@ const useStyles = makeStyles((theme) => ({
     fontWeight: 600,
     marginTop: "1rem",
   },
+  starred: {
+    fill: "#F5AB00",
+    stroke: "#F5AB00",
+  },
   noProjectContainer: {
     minWidth: "100%",
     minHeight: "18rem",
   },
 }));
 
+const listMenus = [
+  // {
+  //   label: "Worked on",
+  //   name: "workedOn",
+  // },
+  // {
+  //   label: "Viewed",
+  //   name: "viewed",
+  // },
+  // {
+  //   label: "Assigned to me",
+  //   name: "assigned",
+  // },
+  {
+    label: "Starred",
+    name: "starred",
+  },
+];
+
 const UserDashboard = () => {
   const classes = useStyles();
   const history = useHistory();
   const [loading, setLoading] = useState(true);
   const [projects, setProjects] = useState([]);
+  const [selected, setSelected] = useState("starred");
+  const [selectedLoading, setSelectedLoading] = useState(false);
+  const [starredProjects, setStarredProjects] = useState([]);
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.authReducer.user);
 
   useEffect(() => {
     getProjects()
@@ -69,24 +107,75 @@ const UserDashboard = () => {
       })
       .catch((error) => {
         console.log(error);
-        setLoading(false);
-        if (error.response?.data?.error)
-          return dispatch(
-            setModalStateAction({
-              showModal: true,
-              text: error.response.data.error,
-              severity: "success",
-            })
-          );
-        return dispatch(
-          setModalStateAction({
-            showModal: true,
-            text: `Something went wrong`,
-            severity: "error",
-          })
-        );
+        handleApiCallError(error);
       });
+    setSelected("starred");
   }, []);
+
+  useEffect(() => {
+    filterStarredProjects();
+  }, [projects, user.projects]);
+
+  const handleApiCallError = (error) => {
+    setLoading(false);
+    if (error.response?.data?.error)
+      return dispatch(
+        setModalStateAction({
+          showModal: true,
+          text: error.response.data.error,
+          severity: "success",
+        })
+      );
+    return dispatch(
+      setModalStateAction({
+        showModal: true,
+        text: `Something went wrong`,
+        severity: "error",
+      })
+    );
+  };
+
+  const filterStarredProjects = () => {
+    const starredProjectIds = user.projects
+      .filter((project) => project.starred)
+      .map((project) => project.project);
+    const starredProjects = projects.filter((project) =>
+      starredProjectIds.includes(project.project._id)
+    );
+    setStarredProjects(starredProjects);
+  };
+
+  const clickHandler = (e) => {
+    setSelectedLoading(true);
+    setSelected(e.target.name);
+  };
+
+  const unstar = (projectId) => {
+    starProject(projectId)
+      .then((resp) => {
+        const { project: updatedProject } = resp.data;
+        dispatch(updateProjectAction({ updatedProject }));
+      })
+      .catch((error) => {
+        console.log(error);
+        handleApiCallError(error);
+      });
+  };
+
+  const sendJobs = () => {
+    switch (selected) {
+      case "workedOn":
+        return;
+      case "viewed":
+        return;
+      case "assigned":
+        return;
+      case "starred":
+        return;
+      default:
+        return;
+    }
+  };
 
   return (
     <Grid container direction="column" className={classes.container}>
@@ -137,6 +226,66 @@ const UserDashboard = () => {
             </Button>
           </Grid>
         )}
+      </Grid>
+      <Grid container direction="column">
+        <Grid
+          container
+          justify="space-between"
+          style={{
+            borderBottom: "1px solid #eee",
+            width: "26rem",
+            padding: ".4rem 1rem",
+          }}
+        >
+          {listMenus.map((menu) => (
+            <Typography
+              name={menu.name}
+              onClick={(e) => clickHandler(e)}
+              className={classes.menuText}
+            >
+              {menu.label}
+            </Typography>
+          ))}
+        </Grid>
+        {starredProjects.map((project) => (
+          <Grid
+            container
+            alignItems="center"
+            style={{
+              flexWrap: "nowrap",
+              padding: ".5rem",
+            }}
+          >
+            <Grid
+              item
+              xs={1}
+              container
+              justify="flex-end"
+              style={{ flexWrap: "nowrap", height: "100%", maxWidth: "2rem" }}
+            >
+              <Star size={15} onClick={() => unstar(project.project._id)}
+              className={classes.starred}
+              />
+            </Grid>
+            <Grid
+              item
+              xs={1}
+              container
+              justify="center"
+              style={{
+                maxWidth: "3rem",
+              }}
+            >
+              <img
+                src={project.project.icon}
+                style={{ width: "50%", borderRadius: "3px" }}
+              />
+            </Grid>
+            <Grid item xs={4} container direction="column" justify="flex-start">
+              <Typography>{project.project.title}</Typography>
+            </Grid>
+          </Grid>
+        ))}
       </Grid>
     </Grid>
   );

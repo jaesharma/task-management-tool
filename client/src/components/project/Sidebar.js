@@ -1,5 +1,6 @@
 import { Grid, Typography, makeStyles } from "@material-ui/core";
 import React from "react";
+import { NavLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
   iconStyles: {
@@ -17,13 +18,16 @@ const useStyles = makeStyles((theme) => ({
   },
   menu: {
     padding: ".4rem 0",
-    transition: 'all ease-in-out .2s',
+    transition: "all ease-in-out .2s",
     "&:hover": {
       backgroundColor: "#EBECF0",
       cursor: "pointer",
       borderRadius: "4px",
-      paddingLeft: "8px"
+      paddingLeft: "8px",
     },
+  },
+  activeLink: {
+    color: "blue",
   },
 }));
 
@@ -31,14 +35,16 @@ const menus = [
   {
     icon: "/assets/kanban-icon.svg",
     label: "Board",
+    link: "board",
   },
   {
     icon: "/assets/setting-icon.svg",
     label: "Project settings",
+    link: "settings",
   },
 ];
 
-const Sidebar = ({ project }) => {
+const Sidebar = ({ project, url, active }) => {
   const classes = useStyles();
   return (
     <Grid
@@ -80,14 +86,29 @@ const Sidebar = ({ project }) => {
         </Grid>
       </Grid>
       {menus.map((menu) => (
-        <Grid container className={classes.menu}>
-          <img
-            src={menu.icon}
-            alt={menu.label}
-            className={classes.iconStyles}
-          />
-          <Typography className={classes.menuLabel}>{menu.label}</Typography>
-        </Grid>
+        <NavLink
+          to={`${url}/${menu.link}`}
+          activeClassName={classes.activeLink}
+          style={{
+            textDecoration: "none",
+          }}
+        >
+          <Grid container className={classes.menu}>
+            <img
+              src={menu.icon}
+              alt={menu.label}
+              className={classes.iconStyles}
+            />
+            <Typography
+              className={classes.menuLabel}
+              style={{
+                color: active === menu.link ? "blue" : "",
+              }}
+            >
+              {menu.label}
+            </Typography>
+          </Grid>
+        </NavLink>
       ))}
     </Grid>
   );

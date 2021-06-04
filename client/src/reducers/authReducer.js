@@ -1,4 +1,9 @@
-import { LOGGED_IN, LOGOUT, SETUP_PROFILE } from "../actions/actionTypes";
+import {
+  LOGGED_IN,
+  LOGOUT,
+  SETUP_PROFILE,
+  UPDATE_PROJECT,
+} from "../actions/actionTypes";
 
 const initialState = {
   isAuthenticated: false,
@@ -34,6 +39,17 @@ const authReducer = (state = initialState, action) => {
         loading: false,
       };
     }
+    case UPDATE_PROJECT:
+      const { updatedProject } = action.payload;
+      const index = state.user.projects.findIndex(
+        (project) => project._id === updatedProject._id
+      );
+      if (index !== -1) {
+        const updatedProjects = [...state.user.projects];
+        updatedProjects[index] = updatedProject;
+        return { ...state, user: { ...state.user, projects: updatedProjects } };
+      }
+      return state;
     default:
       return state;
   }

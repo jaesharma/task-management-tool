@@ -17,14 +17,10 @@ import {
   Grid,
   Avatar,
   Button,
-  CircularProgress,
-  Tooltip,
 } from "@material-ui/core";
 import { useDispatch } from "react-redux";
-import {
-  setModalStateAction,
-  setStaticModalAction,
-} from "../../actions/modalActions";
+import { setModalStateAction } from "../../actions/modalActions";
+import { updateProjectAction } from "../../actions/userInfoActions";
 import { Star } from "react-feather";
 import { useConfirm } from "material-ui-confirm";
 import { NavLink } from "react-router-dom";
@@ -32,8 +28,6 @@ import {
   getProjects,
   starProject,
 } from "../../utility/utilityFunctions/apiCalls";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
 import Skeleton from "@material-ui/lab/Skeleton";
 
 function createData(
@@ -406,13 +400,14 @@ const ProjectListTable = () => {
   const starClickHandler = (projectId, index) => {
     starProject(projectId)
       .then((resp) => {
-        console.log(resp)
+        console.log(resp);
         const updatedProjects = [...projects];
         updatedProjects[index] = resp.data.project;
         setProjects(updatedProjects);
+        dispatch(updateProjectAction({ updatedProject: resp.data.project }));
       })
       .catch((error) => {
-        console.log(error)
+        console.log(error);
         if (error.response?.data?.error)
           return dispatch(
             setModalStateAction({
