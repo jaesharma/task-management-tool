@@ -14,7 +14,6 @@ import { ChevronLeft, ChevronRight } from "react-feather";
 import BoardsPage from "../boards/BoardsPage";
 import ProjectSettingsPage from "./ProjectSettingsPage";
 import Sidebar from "./Sidebar";
-import NotFound from "../shared/NotFound";
 
 const InvalidUserPath = () => {
   return (
@@ -85,8 +84,8 @@ const ProjectPage = (props) => {
     setLoading(true);
     getProjectById(props.match.params.pid)
       .then((resp) => {
-        setLoading(false);
         setProject(resp.data.project);
+        setLoading(false);
       })
       .catch((error) => {
         setLoading(false);
@@ -170,7 +169,10 @@ const ProjectPage = (props) => {
         }}
       >
         <Switch>
-          <Route path={`${props.match.path}/board`} component={BoardsPage} />
+          <Route
+            path={`${props.match.path}/board`}
+            render={() => <BoardsPage project={project} loading={loading} />}
+          />
           <Route
             path={`${props.match.path}/settings`}
             component={ProjectSettingsPage}

@@ -64,10 +64,6 @@ const userSchema = new Schema(
           ref: "Project",
           required: true,
         },
-        key: {
-          type: String,
-          required: true,
-        },
         starred: {
           type: Boolean,
           default: false,

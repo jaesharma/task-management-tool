@@ -104,3 +104,8 @@ export const getProjectById = (pid) => {
   setConfigs();
   return axios.get(`/projects/${pid}`, configs);
 };
+
+export const createColumn = ({ title, projectId }) => {
+  setConfigs();
+  return axios.post(`/columns/create`, { title, projectId }, configs);
+};

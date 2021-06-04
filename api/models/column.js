@@ -14,6 +14,10 @@ const columnSchema = new Schema(
       type: Number,
       default: 30,
     },
+    order: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,

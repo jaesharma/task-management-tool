@@ -10,6 +10,10 @@ const projectSchema = new Schema(
     icon: {
       type: String,
     },
+    key: {
+      type: String,
+      required: true
+    },
     columns: [
       {
         type: mongoose.Types.ObjectId,

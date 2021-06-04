@@ -43,7 +43,9 @@ router.get("/:pid", authAsUser, async (req, res) => {
       return res
         .status(400)
         .send({ error: "cannot find project in user's project list." });
-    const project = await Project.findById(pid);
+    const project = await Project.findById(pid).populate("columns", "", null, {
+      sort: { order: 1 },
+    });
     if (!project)
       return res.status(400).send({ error: "Project does not exist." });
     await project
@@ -62,6 +64,7 @@ router.get("/:pid", authAsUser, async (req, res) => {
       ])
       .populate({
         path: "lead",
+        options: { sort: { "columns.order": "desc" } },
       })
       .populate({
         path: "members.member",
@@ -90,11 +93,11 @@ router.post("/", authAsUser, async (req, res) => {
       return res
         .status(400)
         .send({ error: "key required to create a project." });
-    const todo = await Column({ title: "todo" });
+    const todo = await Column({ title: "todo", order: 1 });
     await todo.save();
-    const inprogress = await Column({ title: "in progress" });
+    const inprogress = await Column({ title: "in progress", order: 2 });
     await inprogress.save();
-    const done = await Column({ title: "done" });
+    const done = await Column({ title: "done", order: 3 });
     await done.save();
     let lead = await Role.findOne({ title: "lead" });
     if (!lead) {
@@ -116,6 +119,7 @@ router.post("/", authAsUser, async (req, res) => {
     };
     const project = await Project({
       title,
+      key,
       icon: "https://res.cloudinary.com/dkdut5n6y/image/upload/v1622495025/avatars/project_kfls9l.svg",
       members: [member],
       lead: req.user._id,
@@ -123,7 +127,7 @@ router.post("/", authAsUser, async (req, res) => {
     });
     await project.save();
     await req.user.updateOne({
-      $push: { projects: { project: project._id, key, starred: false } },
+      $push: { projects: { project: project._id, starred: false } },
     });
     res.send({ project });
   } catch (error) {
