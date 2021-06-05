@@ -2,8 +2,10 @@ import { CircularProgress, Grid, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
 import React, { useState } from "react";
 import { Plus } from "react-feather";
+import { DragDropContext } from "react-beautiful-dnd";
 import { NavLink } from "react-router-dom";
 import Column from "./Column";
+import { shiftTasks } from "../../utility/utilityFunctions/apiCalls";
 
 const useStyles = makeStyles((theme) => ({
   textLabelSecondary: {
@@ -44,6 +46,31 @@ const BoardsPage = ({ project, loading, ...props }) => {
 
   const addNewColumn = () => {
     setAddingNewColumn(true);
+  };
+
+  const handleOnDragEnd = (result) => {
+    const { source, destination } = result;
+    console.log(result);
+    if (!destination) return;
+
+    const { index: sOrder, droppableId: sourceId } = source;
+    const { index: dOrder, droppableId: destId } = destination;
+    const [scId, sColIndex] = sourceId.split("-");
+    const [dcId, dColIndex] = destId.split("-");
+    shiftTasks({ scId, sOrder, dcId, dOrder })
+      .then((resp) => {
+        const { sourceColumn, destinationColumn } = resp.data;
+        console.log(resp.data, sOrder, dOrder);
+        props.setProject((project) => {
+          const cols = [...project.columns];
+          cols[sColIndex] = sourceColumn;
+          cols[dColIndex] = destinationColumn;
+          return { ...project, columns: cols };
+        });
+      })
+      .catch((error) => {
+        console.log(error, error.response);
+      });
   };
 
   return (
@@ -89,14 +116,16 @@ const BoardsPage = ({ project, loading, ...props }) => {
       >
         {!loading && project.columns ? (
           <>
-            {project.columns.map((column, index) => (
-              <Column
-                column={column}
-                projectId={project._id}
-                setProject={props.setProject}
-                index={index}
-              />
-            ))}
+            <DragDropContext onDragEnd={handleOnDragEnd}>
+              {project.columns.map((column, index) => (
+                <Column
+                  column={column}
+                  projectId={project._id}
+                  setProject={props.setProject}
+                  index={index}
+                />
+              ))}
+            </DragDropContext>
             {addingNewColumn ? (
               <Column
                 newColumn

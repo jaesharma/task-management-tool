@@ -36,6 +36,7 @@ const TaskBlock = ({ task, provided, ...props }) => {
       >
         {task.summary}
       </Typography>
+      {provided.placeholder}
     </Grid>
   );
 };

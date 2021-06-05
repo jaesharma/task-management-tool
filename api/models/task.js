@@ -56,6 +56,10 @@ const taskSchema = new Schema(
         ref: "Comment",
       },
     ],
+    order: {
+      type: Number,
+      required: true,
+    },
   },
   {
     timestamps: true,

@@ -1,7 +1,6 @@
 import express from "express";
 import authAsUser from "../middlewares/authAsUser";
 import mongoose from "mongoose";
-import authAsAdmin from "../middlewares/authAsAdmin";
 import { Project, Column, Task } from "../models";
 const ObjectId = mongoose.Types.ObjectId;
 const router = new express.Router();
@@ -49,11 +48,55 @@ router.post("/create", authAsUser, async (req, res) => {
     const newTask = Task({
       summary,
       reporter: req.user._id,
+      order: col.tasks.length + 1,
     });
 
     await newTask.save();
-    await Column.updateOne({ $push: { tasks: newTask._id } });
+    await col.updateOne({ $push: { tasks: newTask._id } });
     return res.send({ task: newTask });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.post("/shift", authAsUser, async (req, res) => {
+  try {
+    const { scId, sOrder, dcId, dOrder } = req.body;
+    const sColumn = await Column.findById(scId).populate("tasks");
+    if (!sColumn)
+      return res.status(400).send({
+        error: "Couldn't find source column.",
+      });
+    const dColumn = await Column.findById(dcId).populate("tasks");
+    if (!dColumn)
+      return res.status(400).send({
+        error: "Couldn't find destination column.",
+      });
+    const taskToBeShifted = sColumn.tasks.find((task) => task.order === sOrder);
+    await sColumn.updateOne({ $pull: { tasks: taskToBeShifted._id } });
+    await taskToBeShifted.updateOne({ order: dOrder });
+    let ids = sColumn.tasks
+      .map((task) => task._id)
+      .filter((id) => id !== taskToBeShifted._id);
+    await Task.update(
+      { and: [{ _id: { $in: ids } }, { order: { $gt: sOrder } }] },
+      { $inc: { order: -1 } },
+      { multi: true }
+    );
+    ids = dColumn.tasks.map((task) => task._id);
+    await Task.update(
+      { and: [{ _id: { $in: ids } }, { order: { $gte: dOrder } }] },
+      { $inc: { order: 1 } },
+      { multi: true }
+    );
+
+    await dColumn.updateOne({ $push: { tasks: taskToBeShifted._id } });
+    const sourceColumn = await Column.findById(scId).populate("tasks");
+    const destinationColumn = await Column.findById(dcId).populate("tasks");
+    res.send({ sourceColumn, destinationColumn });
   } catch (error) {
     console.log(error);
     res.status(500).send({

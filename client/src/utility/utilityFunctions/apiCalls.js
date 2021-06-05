@@ -114,3 +114,8 @@ export const createTask = ({ summary, columnId, projectId }) => {
   setConfigs();
   return axios.post(`/tasks/create`, { summary, columnId, projectId }, configs);
 };
+
+export const shiftTasks = ({ scId, sOrder, dcId, dOrder }) => {
+  setConfigs();
+  return axios.post("/tasks/shift", { scId, sOrder, dcId, dOrder }, configs);
+};

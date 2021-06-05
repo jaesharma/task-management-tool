@@ -7,7 +7,7 @@ import {
   createTask,
 } from "../../utility/utilityFunctions/apiCalls";
 import TaskBlock from "./TaskBlock";
-import { DragDropContext, Draggable, Droppable } from "react-beautiful-dnd";
+import { Draggable, Droppable } from "react-beautiful-dnd";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -154,81 +154,84 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
       </Grid>
     );
   }
-  return (
-    <DragDropContext>
-      <Droppable droppableId="tasks">
-        {(provided) => (
-          <Grid
-            item
-            xs={3}
-            container
-            ref={provided.innerRef}
-            direction="column"
-            className={`${classes.container} tasks`}
-            onMouseEnter={() => setShowCreateBtn(true)}
-            onMouseLeave={() => setShowCreateBtn(false)}
-          >
-            <Typography className={classes.title}>{column.title}</Typography>
-            <Grid
-              container
-              direction="column"
-              style={{
-                flex: 1,
-              }}
-            >
-              {column.tasks.map((task, index) => (
-                <Draggable key={task._id} draggableId={task._id} index={index}>
-                  {(provided) => (
-                    <TaskBlock
-                      task={task}
-                      provided={provided}
-                      innerref={provided.innerRef}
 
-                    />
-                  )}
-                </Draggable>
-              ))}
-              {addingNewTask && (
-                <Skeleton
-                  variant="rect"
-                  width={210}
-                  height={118}
-                  style={{
-                    marginTop: ".3rem",
-                    borderRadius: "4px",
-                  }}
-                />
-              )}
-              {showCreateIssueBox && (
-                <textArea
-                  autoFocus
-                  ref={issueInputRef}
-                  rows={4}
-                  className={classes.createIssueTextInput}
-                  value={createIssueText}
-                  name="issue-text"
-                  placeholder="What needs to be done?"
-                  onChange={createIssueChangeHandler}
-                  onKeyDown={keyDownHandlerForIssue}
-                  onBlur={() => setShowCreateIssueBox(false)}
-                />
-              )}
-            </Grid>
-            {showCreateBtn && (
-              <Grid
-                container
-                alignItems="flex-end"
-                className={classes.addBtn}
-                onClick={() => setShowCreateIssueBox(true)}
+  return (
+    <Droppable droppableId={`${column._id}-${props.index}`}>
+      {(provided) => (
+        <Grid
+          item
+          xs={3}
+          container
+          ref={provided.innerRef}
+          direction="column"
+          className={`${classes.container} tasks`}
+          onMouseEnter={() => setShowCreateBtn(true)}
+          onMouseLeave={() => setShowCreateBtn(false)}
+        >
+          <Typography className={classes.title}>{column.title}</Typography>
+          <Grid
+            container
+            direction="column"
+            style={{
+              flex: 1,
+            }}
+          >
+            {column.tasks.map((task, index) => (
+              <Draggable
+                key={task._id}
+                draggableId={task._id}
+                index={task.order}
               >
-                <Plus size={19} />
-                Create issue
-              </Grid>
+                {(provided) => (
+                  <TaskBlock
+                    task={task}
+                    provided={provided}
+                    innerref={provided.innerRef}
+                  />
+                )}
+              </Draggable>
+            ))}
+            {addingNewTask && (
+              <Skeleton
+                variant="rect"
+                width={210}
+                height={118}
+                style={{
+                  marginTop: ".3rem",
+                  borderRadius: "4px",
+                }}
+              />
+            )}
+            {showCreateIssueBox && (
+              <textArea
+                autoFocus
+                ref={issueInputRef}
+                rows={4}
+                className={classes.createIssueTextInput}
+                value={createIssueText}
+                name="issue-text"
+                placeholder="What needs to be done?"
+                onChange={createIssueChangeHandler}
+                onKeyDown={keyDownHandlerForIssue}
+                onBlur={() => setShowCreateIssueBox(false)}
+              />
             )}
           </Grid>
-        )}
-      </Droppable>
-    </DragDropContext>
+          {showCreateBtn && (
+            <Grid
+              container
+              alignItems="flex-end"
+              className={classes.addBtn}
+              onClick={() => setShowCreateIssueBox(true)}
+            >
+              <Plus size={19} />
+              Create issue
+            </Grid>
+          )}
+          {provided.placeholder}
+        </Grid>
+      )}
+    </Droppable>
   );
 };
 

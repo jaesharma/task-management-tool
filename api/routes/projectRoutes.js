@@ -55,24 +55,32 @@ router.get("/:pid", authAsUser, async (req, res) => {
           populate: [
             {
               path: "tasks",
+              options: {
+                sort: {
+                  order: 1,
+                },
+              },
             },
             {
               path: "tasks.subtasks",
             },
           ],
+          options: {
+            sort: {
+              order: 1,
+            },
+          },
+        },
+        {
+          path: "lead",
+        },
+        {
+          path: "members.member",
+        },
+        {
+          path: "members.roles",
         },
       ])
-      .populate("columns.tasks")
-      .populate({
-        path: "lead",
-        options: { sort: { "columns.order": "desc" } },
-      })
-      .populate({
-        path: "members.member",
-      })
-      .populate({
-        path: "members.roles",
-      })
       .execPopulate();
     res.send({ project });
   } catch (error) {
