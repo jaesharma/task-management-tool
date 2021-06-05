@@ -110,6 +110,13 @@ const ProjectPage = (props) => {
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
   };
+
+  const addColumnToProject = (column) => {
+    setProject((project) => {
+      return { ...project, columns: [...project.columns, column] };
+    });
+  };
+
   return (
     <Grid
       container
@@ -171,7 +178,14 @@ const ProjectPage = (props) => {
         <Switch>
           <Route
             path={`${props.match.path}/board`}
-            render={() => <BoardsPage project={project} loading={loading} />}
+            render={() => (
+              <BoardsPage
+                project={project}
+                loading={loading}
+                addColumnToProject={addColumnToProject}
+                setProject={setProject}
+              />
+            )}
           />
           <Route
             path={`${props.match.path}/settings`}

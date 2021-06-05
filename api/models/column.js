@@ -7,6 +7,7 @@ const columnSchema = new Schema(
     tasks: [
       {
         type: mongoose.Types.ObjectId,
+        ref: "Task",
         required: true,
       },
     ],

@@ -38,7 +38,7 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-const BoardsPage = ({ project, loading }) => {
+const BoardsPage = ({ project, loading, ...props }) => {
   const classes = useStyles();
   const [addingNewColumn, setAddingNewColumn] = useState(false);
 
@@ -89,11 +89,21 @@ const BoardsPage = ({ project, loading }) => {
       >
         {!loading && project.columns ? (
           <>
-            {project.columns.map((column) => (
-              <Column column={column} />
+            {project.columns.map((column, index) => (
+              <Column
+                column={column}
+                projectId={project._id}
+                setProject={props.setProject}
+                index={index}
+              />
             ))}
             {addingNewColumn ? (
-              <Column newColumn projectId={project._id} setAddingNewColumn={setAddingNewColumn} />
+              <Column
+                newColumn
+                addColumnToProject={props.addColumnToProject}
+                projectId={project._id}
+                setAddingNewColumn={setAddingNewColumn}
+              />
             ) : (
               <div className={classes.plusBtn} onClick={() => addNewColumn()}>
                 <Plus size={28} />

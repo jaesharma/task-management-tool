@@ -62,6 +62,7 @@ router.get("/:pid", authAsUser, async (req, res) => {
           ],
         },
       ])
+      .populate("columns.tasks")
       .populate({
         path: "lead",
         options: { sort: { "columns.order": "desc" } },

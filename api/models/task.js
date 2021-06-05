@@ -56,12 +56,6 @@ const taskSchema = new Schema(
         ref: "Comment",
       },
     ],
-    subtasks: [
-      {
-        type: mongoose.Types.ObjectId,
-        ref: "Subtask",
-      },
-    ],
   },
   {
     timestamps: true,

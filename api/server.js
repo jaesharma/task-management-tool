@@ -6,6 +6,8 @@ import adminRoutes from "./routes/adminRoutes";
 import authRoutes from "./routes/authRoutes";
 import userRoutes from "./routes/userRoutes";
 import projectRoutes from "./routes/projectRoutes";
+import columnRoutes from "./routes/columnRoutes";
+import taskRoutes from "./routes/taskRoutes";
 
 const app = express();
 app.use(express.json());
@@ -13,6 +15,8 @@ app.use(cors());
 app.use("/admin", adminRoutes);
 app.use("/users", userRoutes);
 app.use("/projects", projectRoutes);
+app.use("/columns", columnRoutes);
+app.use("/tasks", taskRoutes);
 app.use(authRoutes);
 app.use((err, _req, res, next) => {
   //to check if request is in valid JSON format or not

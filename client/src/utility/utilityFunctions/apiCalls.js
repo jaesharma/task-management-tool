@@ -109,3 +109,8 @@ export const createColumn = ({ title, projectId }) => {
   setConfigs();
   return axios.post(`/columns/create`, { title, projectId }, configs);
 };
+
+export const createTask = ({ summary, columnId, projectId }) => {
+  setConfigs();
+  return axios.post(`/tasks/create`, { summary, columnId, projectId }, configs);
+};
