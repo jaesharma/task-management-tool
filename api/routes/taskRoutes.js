@@ -65,6 +65,7 @@ router.post("/create", authAsUser, async (req, res) => {
 router.post("/shift", authAsUser, async (req, res) => {
   try {
     const { scId, sOrder, dcId, dOrder } = req.body;
+    console.log("=> ", scId, sOrder, dcId, dOrder);
     const sColumn = await Column.findById(scId).populate("tasks");
     if (!sColumn)
       return res.status(400).send({
@@ -75,27 +76,41 @@ router.post("/shift", authAsUser, async (req, res) => {
       return res.status(400).send({
         error: "Couldn't find destination column.",
       });
-    const taskToBeShifted = sColumn.tasks.find((task) => task.order === sOrder);
+    let taskToBeShifted = sColumn.tasks.find((task) => task.order === sOrder);
+    await Task.update({ _id: taskToBeShifted._id }, { order: dOrder });
     await sColumn.updateOne({ $pull: { tasks: taskToBeShifted._id } });
-    await taskToBeShifted.updateOne({ order: dOrder });
     let ids = sColumn.tasks
       .map((task) => task._id)
-      .filter((id) => id !== taskToBeShifted._id);
-    await Task.update(
-      { and: [{ _id: { $in: ids } }, { order: { $gt: sOrder } }] },
-      { $inc: { order: -1 } },
-      { multi: true }
+      .filter((id) => id.toString() !== taskToBeShifted._id.toString());
+    await Task.updateMany(
+      { _id: { $in: ids }, order: { $gt: sOrder } },
+      { $inc: { order: -1 } }
     );
-    ids = dColumn.tasks.map((task) => task._id);
-    await Task.update(
-      { and: [{ _id: { $in: ids } }, { order: { $gte: dOrder } }] },
-      { $inc: { order: 1 } },
-      { multi: true }
+    ids = dColumn.tasks
+      .map((task) => task._id)
+      .filter((id) => id.toString() !== taskToBeShifted._id.toString());
+    await Task.updateMany(
+      { _id: { $in: ids }, order: { $gte: dOrder } },
+      { $inc: { order: 1 } }
     );
 
     await dColumn.updateOne({ $push: { tasks: taskToBeShifted._id } });
-    const sourceColumn = await Column.findById(scId).populate("tasks");
-    const destinationColumn = await Column.findById(dcId).populate("tasks");
+    const sourceColumn = await Column.findById(scId).populate({
+      path: "tasks",
+      options: {
+        sort: {
+          order: 1,
+        },
+      },
+    });
+    const destinationColumn = await Column.findById(dcId).populate({
+      path: "tasks",
+      options: {
+        sort: {
+          order: 1,
+        },
+      },
+    });
     res.send({ sourceColumn, destinationColumn });
   } catch (error) {
     console.log(error);

@@ -41,6 +41,7 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const BoardsPage = ({ project, loading, ...props }) => {
+  console.log(project.columns)
   const classes = useStyles();
   const [addingNewColumn, setAddingNewColumn] = useState(false);
 
@@ -53,10 +54,33 @@ const BoardsPage = ({ project, loading, ...props }) => {
     console.log(result);
     if (!destination) return;
 
-    const { index: sOrder, droppableId: sourceId } = source;
-    const { index: dOrder, droppableId: destId } = destination;
+    let { index: sOrder, droppableId: sourceId } = source;
+    let { index: dOrder, droppableId: destId } = destination;
+    if (!sOrder) sOrder = 1;
+    if (!dOrder) dOrder = 1;
     const [scId, sColIndex] = sourceId.split("-");
     const [dcId, dColIndex] = destId.split("-");
+    let sColumn = project.columns[sColIndex];
+    let dColumn = project.columns[dColIndex];
+    const taskToBeAdded = {
+      ...sColumn.tasks[sOrder - 1],
+      order: dOrder,
+    };
+    sColumn.tasks.splice(sOrder - 1, 1);
+    sColumn.tasks = sColumn.tasks.map((task) => {
+      return task.order > sOrder ? { ...task, order: task.order - 1 } : task;
+    });
+    dColumn.tasks = dColumn.tasks.map((task) => {
+      return task.order >= dOrder ? { ...task, order: task.order + 1 } : task;
+    });
+    dColumn.tasks.splice(dOrder - 1, null, taskToBeAdded);
+    props.setProject((project) => {
+      const cols = [...project.columns];
+      cols[sColIndex] = sColumn;
+      cols[dColIndex] = dColumn;
+      return { ...project, columns: cols };
+    });
+
     shiftTasks({ scId, sOrder, dcId, dOrder })
       .then((resp) => {
         const { sourceColumn, destinationColumn } = resp.data;
