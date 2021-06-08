@@ -5,6 +5,7 @@ import { Plus } from "react-feather";
 import {
   createColumn,
   createTask,
+  deleteTask,
 } from "../../utility/utilityFunctions/apiCalls";
 import TaskBlock from "./TaskBlock";
 import { Draggable, Droppable } from "react-beautiful-dnd";
@@ -17,6 +18,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "0 0 5px 5px",
     background: "#F4F5F7",
     minWidth: "16rem",
+    maxWidth: "16rem",
     flexWrap: "nowrap",
     transition: "all ease-in-out .1s",
   },
@@ -71,6 +73,30 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
   const changeHandler = (e) => setTitle(e.target.value);
 
   const createIssueChangeHandler = (e) => setCreaetIssueText(e.target.value);
+
+  const removeTask = (id) => {
+    deleteTask(id)
+      .then((resp) => {
+        const { task: deletedTask } = resp.data;
+        let tasks = [...column.tasks];
+        tasks.splice(deletedTask.order - 1, 1);
+        tasks = tasks.map((task) =>
+          task.order >= deletedTask.order
+            ? { ...task, order: task.order - 1 }
+            : task
+        );
+
+        props.setProject((project) => {
+          const cols = project.columns.map((col) =>
+            col._id === column._id ? { ...col, tasks } : col
+          );
+          return { ...project, columns: cols };
+        });
+      })
+      .catch((error) => {
+        console.log(error);
+      });
+  };
 
   const keyDownHandler = (e) => {
     const { key } = e;
@@ -166,7 +192,7 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
           ref={provided.innerRef}
           direction="column"
           className={`${classes.container} tasks`}
-          onMouseEnter={() => setShowCreateBtn(true)}
+          onMouseOver={() => setShowCreateBtn(true)}
           onMouseLeave={() => setShowCreateBtn(false)}
         >
           <Grid
@@ -186,6 +212,8 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
                   <TaskBlock
                     task={task}
                     provided={provided}
+                    removeTask={removeTask}
+                    index={index}
                     innerref={provided.innerRef}
                   />
                 )}

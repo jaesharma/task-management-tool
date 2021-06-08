@@ -3,6 +3,12 @@ import React from "react";
 import { NavLink } from "react-router-dom";
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    padding: "2rem 1rem 1rem 1rem",
+    [theme.breakpoints.down("sm")]: {
+      paddingTop: "4rem",
+    },
+  },
   iconStyles: {
     stroke: "red",
     fill: "green",
@@ -47,13 +53,7 @@ const menus = [
 const Sidebar = ({ project, url, active }) => {
   const classes = useStyles();
   return (
-    <Grid
-      container
-      direction="column"
-      style={{
-        padding: "2rem 1rem 1rem 1rem",
-      }}
-    >
+    <Grid container direction="column" className={classes.container}>
       <Grid
         container
         style={{

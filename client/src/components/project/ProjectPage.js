@@ -40,6 +40,13 @@ const InvalidUserPath = () => {
 };
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    flexWrap: "nowrap",
+    transition: "all ease-in-out .3s",
+    overflow: "hidden",
+    height: "91.5vh",
+    width: "100%",
+  },
   toggleBtn: {
     position: "absolute",
     top: "20%",
@@ -118,16 +125,7 @@ const ProjectPage = (props) => {
   };
 
   return (
-    <Grid
-      container
-      style={{
-        flexWrap: "nowrap",
-        transition: "all ease-in-out .3s",
-        overflow: "hidden",
-        height: "91.5vh",
-        width: "100%",
-      }}
-    >
+    <Grid container className={classes.container}>
       <Grid
         item
         md={sidebarOpen ? 2 : 0}
@@ -162,7 +160,7 @@ const ProjectPage = (props) => {
           onClick={() => toggleSidebar()}
           className={classes.toggleBtn}
           style={{
-            left: sidebarOpen ? (matches ? "15.8%" : "52%") : "",
+            left: sidebarOpen ? (matches ? "15.8%" : "55%") : "",
           }}
         >
           {sidebarOpen ? (
@@ -174,16 +172,11 @@ const ProjectPage = (props) => {
       </Grid>
       <Grid
         item
-        xs={sidebarOpen ? 10 : 12}
+        xs={sidebarOpen ? (matches ? 10 : 5) : 12}
         container
-        style={
-          {
-            // transition: "all ease-in-out .4s",
-            // overflow: "scroll",
-            // width: "100%",
-            // height: "100%",
-          }
-        }
+        style={{
+          width: "100%",
+        }}
       >
         <Switch>
           <Route

@@ -119,3 +119,8 @@ export const shiftTasks = ({ scId, sOrder, dcId, dOrder }) => {
   setConfigs();
   return axios.post("/tasks/shift", { scId, sOrder, dcId, dOrder }, configs);
 };
+
+export const deleteTask = (id) => {
+  setConfigs();
+  return axios.delete(`/tasks/${id}`, configs);
+};

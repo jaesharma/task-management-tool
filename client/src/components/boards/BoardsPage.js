@@ -1,5 +1,9 @@
-import { CircularProgress, Grid, Typography } from "@material-ui/core";
-import { makeStyles } from "@material-ui/styles";
+import {
+  CircularProgress,
+  Grid,
+  Typography,
+  makeStyles,
+} from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { Plus } from "react-feather";
 import { DragDropContext } from "react-beautiful-dnd";
@@ -8,6 +12,14 @@ import Column from "./Column";
 import { shiftTasks } from "../../utility/utilityFunctions/apiCalls";
 
 const useStyles = makeStyles((theme) => ({
+  container: {
+    padding: "3rem 1rem 0 4rem",
+    flexWrap: "nowrap",
+    height: "100%",
+    [theme.breakpoints.down("sm")]: {
+      padding: "3rem 1rem 1rem 1rem",
+    },
+  },
   textLabelSecondary: {
     color: "#6B778C",
     fontWeight: 400,
@@ -54,14 +66,13 @@ const useStyles = makeStyles((theme) => ({
   },
   colHeader: {
     position: "sticky",
-    top: 0,
+    top: -1,
     background: "#F4F5F7",
-    width: "95%",
     borderRadius: "5px 5px 0 0",
     padding: ".6rem 0",
-    marginLeft: ".4rem",
+    margin: "0 .4rem",
     paddingLeft: ".8rem",
-    boxShadow: "0 4px 12px -8px #777",
+    boxShadow: "0 4px 12px -9px #777",
     textTransform: "uppercase",
     fontSize: ".8rem",
     fontWeight: 600,
@@ -128,24 +139,12 @@ const BoardsPage = ({ project, loading, ...props }) => {
   };
 
   return (
-    <Grid
-      container
-      direction="column"
-      style={{
-        padding: "3rem 1rem 0 4rem",
-        flexWrap: "nowrap",
-      }}
-    >
+    <Grid container direction="column" className={classes.container}>
       <Grid
         container
         direction="column"
         style={{
           background: "#fff",
-          width: "100%",
-          // height: "100%",
-          // width: "100vw",
-          // height: "20vh",
-          top: 60,
         }}
       >
         <Grid container>

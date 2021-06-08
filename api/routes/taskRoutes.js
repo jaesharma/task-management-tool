@@ -120,4 +120,26 @@ router.post("/shift", authAsUser, async (req, res) => {
   }
 });
 
+router.delete("/:id", authAsUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const task = await Task.findById(id);
+    if (!task) return res.status(404).send({ error: "Task not found!" });
+    await Task.findByIdAndRemove(id);
+    const col = await Column.findOne({ tasks: { $in: id } });
+    let ids = col.tasks.filter((taskId) => taskId.toString() !== id.toString());
+    await col.updateOne({ $pull: { tasks: id } });
+    await Task.updateMany(
+      { _id: { $in: ids }, order: { $gte: task.order } },
+      { $inc: { order: -1 } }
+    );
+    res.send({ task });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
 export default router;
