@@ -10,7 +10,7 @@ const useStyles = makeStyles((theme) => ({
     margin: "4px 0",
     width: "100%",
     transition: "all ease-in-out .2s",
-    boxShadow: "0px 0px 12px 1px #eee",
+    boxShadow: "0px 16px 6px 5px #ddd",
     "&:hover": {
       background: "#B3D4FF",
       cursor: "pointer",

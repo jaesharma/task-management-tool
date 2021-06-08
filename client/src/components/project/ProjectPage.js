@@ -78,7 +78,7 @@ const ProjectPage = (props) => {
   const matches = useMediaQuery(theme.breakpoints.up("md"));
   const [loading, setLoading] = useState(false);
   const [project, setProject] = useState({});
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
   useEffect(() => {
     setLoading(true);
@@ -123,6 +123,9 @@ const ProjectPage = (props) => {
       style={{
         flexWrap: "nowrap",
         transition: "all ease-in-out .3s",
+        overflow: "hidden",
+        height: "91.5vh",
+        width: "100%",
       }}
     >
       <Grid
@@ -132,7 +135,9 @@ const ProjectPage = (props) => {
         container
         direction="column"
         style={{
-          maxWidth: sidebarOpen ? "" : "1px",
+          minWidth: "1rem",
+          maxWidth: sidebarOpen ? "" : "2rem",
+          display: sidebarOpen ? "block" : "none",
           flexWrap: "nowrap",
           overflow: "hidden",
           transition: "all ease-in-out .1s",
@@ -150,7 +155,7 @@ const ProjectPage = (props) => {
         container
         className={classes.sidebarDivider}
         style={{
-          maxWidth: sidebarOpen ? "1px" : "1rem",
+          minWidth: "1rem",
         }}
       >
         <Typography
@@ -169,11 +174,16 @@ const ProjectPage = (props) => {
       </Grid>
       <Grid
         item
-        xs={10}
+        xs={sidebarOpen ? 10 : 12}
         container
-        style={{
-          transition: "all ease-in-out .4s",
-        }}
+        style={
+          {
+            // transition: "all ease-in-out .4s",
+            // overflow: "scroll",
+            // width: "100%",
+            // height: "100%",
+          }
+        }
       >
         <Switch>
           <Route

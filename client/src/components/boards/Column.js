@@ -13,9 +13,9 @@ const useStyles = makeStyles((theme) => ({
   container: {
     padding: "1rem",
     margin: "6px",
-    borderRadius: "5px",
+    marginTop: 0,
+    borderRadius: "0 0 5px 5px",
     background: "#F4F5F7",
-    minHeight: "12rem",
     minWidth: "16rem",
     flexWrap: "nowrap",
     transition: "all ease-in-out .1s",
@@ -98,6 +98,7 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
       createTask({ summary: createIssueText, columnId: column._id, projectId })
         .then((resp) => {
           setAddingNewTask(false);
+          setShowCreateIssueBox(true);
           props.setProject((project) => {
             const updatedColumns = [...project.columns];
             updatedColumns[props.index].tasks = updatedColumns[
@@ -168,12 +169,11 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
           onMouseEnter={() => setShowCreateBtn(true)}
           onMouseLeave={() => setShowCreateBtn(false)}
         >
-          <Typography className={classes.title}>{column.title}</Typography>
           <Grid
             container
             direction="column"
             style={{
-              flex: 1,
+              flexWrap: "nowrap",
             }}
           >
             {column.tasks.map((task, index) => (

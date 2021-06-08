@@ -1,6 +1,6 @@
 import { CircularProgress, Grid, Typography } from "@material-ui/core";
 import { makeStyles } from "@material-ui/styles";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Plus } from "react-feather";
 import { DragDropContext } from "react-beautiful-dnd";
 import { NavLink } from "react-router-dom";
@@ -33,15 +33,45 @@ const useStyles = makeStyles((theme) => ({
     background: "#f4f5f7",
     maxWidth: "2rem",
     maxHeight: "1.8rem",
-    padding: ".2rem",
+    padding: ".4rem",
     borderRadius: "2px",
     marginTop: "5px",
     marginLeft: "6px",
+    transition: "all ease-in-out .2s",
+    "&:hover": {
+      background: "#eee",
+      cursor: "pointer",
+    },
+  },
+  board: {
+    flexWrap: "nowrap",
+    width: "100%",
+    marginTop: "2rem",
+    minHeight: "26.8rem",
+    maxHeight: "26.8rem",
+    overflow: "auto",
+    paddingTop: 0,
+  },
+  colHeader: {
+    position: "sticky",
+    top: 0,
+    background: "#F4F5F7",
+    width: "95%",
+    borderRadius: "5px 5px 0 0",
+    padding: ".6rem 0",
+    marginLeft: ".4rem",
+    paddingLeft: ".8rem",
+    boxShadow: "0 4px 12px -8px #777",
+    textTransform: "uppercase",
+    fontSize: ".8rem",
+    fontWeight: 600,
+    fontFamily: "Merriweather Sans",
+    color: "#777",
   },
 }));
 
 const BoardsPage = ({ project, loading, ...props }) => {
-  console.log(project.columns)
+  console.log(project.columns);
   const classes = useStyles();
   const [addingNewColumn, setAddingNewColumn] = useState(false);
 
@@ -103,51 +133,73 @@ const BoardsPage = ({ project, loading, ...props }) => {
       direction="column"
       style={{
         padding: "3rem 1rem 0 4rem",
+        flexWrap: "nowrap",
       }}
     >
-      <Grid container>
-        <NavLink to={`/user/projects`} className={classes.link}>
-          <Typography className={classes.textLabelSecondary}>
-            Projects
-          </Typography>
-        </NavLink>
-        <Typography
-          style={{
-            color: "#6B778C",
-            fontFamily: "Merriweather Sans",
-            margin: "0 .2rem",
-          }}
-        >
-          /
-        </Typography>
-        <NavLink to={`/projects/${project._id}/board`} className={classes.link}>
-          <Typography className={classes.textLabelSecondary}>
-            {project.title}
-          </Typography>
-        </NavLink>
-      </Grid>
-      <Grid container>
-        <Typography variant="h5" className={classes.boardText}>
-          {project.key} board
-        </Typography>
-      </Grid>
       <Grid
         container
+        direction="column"
         style={{
-          flexWrap: "nowrap",
-          marginTop: "2rem",
+          background: "#fff",
+          width: "100%",
+          // height: "100%",
+          // width: "100vw",
+          // height: "20vh",
+          top: 60,
         }}
       >
+        <Grid container>
+          <NavLink to={`/user/projects`} className={classes.link}>
+            <Typography className={classes.textLabelSecondary}>
+              Projects
+            </Typography>
+          </NavLink>
+          <Typography
+            style={{
+              color: "#6B778C",
+              fontFamily: "Merriweather Sans",
+              margin: "0 .2rem",
+            }}
+          >
+            /
+          </Typography>
+          <NavLink
+            to={`/projects/${project._id}/board`}
+            className={classes.link}
+          >
+            <Typography className={classes.textLabelSecondary}>
+              {project.title}
+            </Typography>
+          </NavLink>
+        </Grid>
+        <Grid container>
+          <Typography variant="h5" className={classes.boardText}>
+            {project.key} board
+          </Typography>
+        </Grid>
+      </Grid>
+      <Grid container className={classes.board}>
         {!loading && project.columns ? (
           <>
             <DragDropContext onDragEnd={handleOnDragEnd}>
               {project.columns.map((column, index) => (
-                <Column
-                  column={column}
-                  projectId={project._id}
-                  setProject={props.setProject}
-                  index={index}
-                />
+                <Grid
+                  container
+                  direction="column"
+                  style={{
+                    flexWrap: "nowrap",
+                  }}
+                >
+                  <Typography className={classes.colHeader}>
+                    {column.title}
+                  </Typography>
+                  <Column
+                    column={column}
+                    projectId={project._id}
+                    setProject={props.setProject}
+                    index={index}
+                  />
+                </Grid>
               ))}
             </DragDropContext>
             {addingNewColumn ? (

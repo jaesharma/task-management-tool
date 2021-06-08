@@ -58,7 +58,7 @@ const ProjectCard = ({ project }) => {
       >
         <Grid item xs={12} containter className={classes.content}>
           <NavLink
-            to={`/projects/${project._id}`}
+            to={`/projects/${project._id}/board`}
             style={{
               textDecoration: "none",
               color: "#000",
