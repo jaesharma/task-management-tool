@@ -14,13 +14,19 @@ const useStyles = makeStyles((theme) => ({
   container: {
     padding: "1rem",
     margin: "6px",
+    height: "100%",
+    overflow: "auto",
     marginTop: 0,
     borderRadius: "0 0 5px 5px",
     background: "#F4F5F7",
     minWidth: "16rem",
     maxWidth: "16rem",
+    minHeight: "8rem",
     flexWrap: "nowrap",
     transition: "all ease-in-out .1s",
+    "&::-webkit-scrollbar":{
+      display: "none"
+    }
   },
   title: {
     textTransform: "uppercase",
@@ -186,65 +192,51 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
     <Droppable droppableId={`${column._id}-${props.index}`}>
       {(provided) => (
         <Grid
-          item
-          xs={3}
           container
-          ref={provided.innerRef}
           direction="column"
+          ref={provided.innerRef}
           className={`${classes.container} tasks`}
           onMouseOver={() => setShowCreateBtn(true)}
           onMouseLeave={() => setShowCreateBtn(false)}
         >
-          <Grid
-            container
-            direction="column"
-            style={{
-              flexWrap: "nowrap",
-            }}
-          >
-            {column.tasks.map((task, index) => (
-              <Draggable
-                key={task._id}
-                draggableId={task._id}
-                index={task.order}
-              >
-                {(provided) => (
-                  <TaskBlock
-                    task={task}
-                    provided={provided}
-                    removeTask={removeTask}
-                    index={index}
-                    innerref={provided.innerRef}
-                  />
-                )}
-              </Draggable>
-            ))}
-            {addingNewTask && (
-              <Skeleton
-                variant="rect"
-                width={210}
-                height={118}
-                style={{
-                  marginTop: ".3rem",
-                  borderRadius: "4px",
-                }}
-              />
-            )}
-            {showCreateIssueBox && (
-              <textArea
-                autoFocus
-                ref={issueInputRef}
-                rows={4}
-                className={classes.createIssueTextInput}
-                value={createIssueText}
-                name="issue-text"
-                placeholder="What needs to be done?"
-                onChange={createIssueChangeHandler}
-                onKeyDown={keyDownHandlerForIssue}
-                onBlur={() => setShowCreateIssueBox(false)}
-              />
-            )}
-          </Grid>
+          {column.tasks.map((task, index) => (
+            <Draggable key={task._id} draggableId={task._id} index={task.order}>
+              {(provided) => (
+                <TaskBlock
+                  task={task}
+                  provided={provided}
+                  removeTask={removeTask}
+                  index={index}
+                  innerref={provided.innerRef}
+                />
+              )}
+            </Draggable>
+          ))}
+          {addingNewTask && (
+            <Skeleton
+              variant="rect"
+              width={210}
+              height={118}
+              style={{
+                marginTop: ".3rem",
+                borderRadius: "4px",
+              }}
+            />
+          )}
+          {showCreateIssueBox && (
+            <textArea
+              autoFocus
+              ref={issueInputRef}
+              rows={4}
+              className={classes.createIssueTextInput}
+              value={createIssueText}
+              name="issue-text"
+              placeholder="What needs to be done?"
+              onChange={createIssueChangeHandler}
+              onKeyDown={keyDownHandlerForIssue}
+              onBlur={() => setShowCreateIssueBox(false)}
+            />
+          )}
           {showCreateBtn && (
             <Grid
               container

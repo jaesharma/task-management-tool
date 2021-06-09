@@ -81,7 +81,7 @@ const TaskBlock = ({ task, provided, ...props }) => {
                   >
                     Delete
                   </Typography>
-                  <Divider fullWidth />
+                  <Divider />
                 </Grid>
               </Grid>
             </Paper>

@@ -85,10 +85,11 @@ const Sidebar = ({ project, url, active }) => {
           </Typography>
         </Grid>
       </Grid>
-      {menus.map((menu) => (
+      {menus.map((menu, index) => (
         <NavLink
           to={`${url}/${menu.link}`}
           activeClassName={classes.activeLink}
+          key={index}
           style={{
             textDecoration: "none",
           }}

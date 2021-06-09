@@ -49,6 +49,8 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "2px",
     marginTop: "5px",
     marginLeft: "6px",
+    position: "sticky",
+    top: 0,
     transition: "all ease-in-out .2s",
     "&:hover": {
       background: "#eee",
@@ -59,8 +61,8 @@ const useStyles = makeStyles((theme) => ({
     flexWrap: "nowrap",
     width: "100%",
     marginTop: "2rem",
-    minHeight: "26.8rem",
-    maxHeight: "26.8rem",
+    // minHeight: "26.8rem",
+    // maxHeight: "26.8rem",
     overflow: "auto",
     paddingTop: 0,
   },
@@ -185,6 +187,7 @@ const BoardsPage = ({ project, loading, ...props }) => {
                 <Grid
                   container
                   direction="column"
+                  key={index}
                   style={{
                     flexWrap: "nowrap",
                   }}
