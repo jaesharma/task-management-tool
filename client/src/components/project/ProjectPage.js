@@ -87,8 +87,7 @@ const ProjectPage = (props) => {
   const [project, setProject] = useState({});
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const dispatch = useDispatch();
-  useEffect(() => {
-    setLoading(true);
+  const fetchAndSetProject = () => {
     getProjectById(props.match.params.pid)
       .then((resp) => {
         setProject(resp.data.project);
@@ -112,10 +111,23 @@ const ProjectPage = (props) => {
           })
         );
       });
+  };
+  useEffect(() => {
+    setLoading(true);
+    fetchAndSetProject();
   }, [props.match.params.pid]);
 
   const toggleSidebar = () => {
     setSidebarOpen((prev) => !prev);
+  };
+
+  const updateColumn = (column) => {
+    setProject((project) => {
+      const index = project.columns.findIndex((col) => col._id === column._id);
+      const updatedProject = { ...project };
+      updatedProject.columns[index] = column;
+      return updatedProject;
+    });
   };
 
   const addColumnToProject = (column) => {
@@ -176,7 +188,7 @@ const ProjectPage = (props) => {
         container
         style={{
           width: "100%",
-          height: "100%"
+          height: "100%",
         }}
       >
         <Switch>
@@ -188,6 +200,8 @@ const ProjectPage = (props) => {
                 loading={loading}
                 addColumnToProject={addColumnToProject}
                 setProject={setProject}
+                updateColumn={updateColumn}
+                fetchAndSetProject={fetchAndSetProject}
               />
             )}
           />

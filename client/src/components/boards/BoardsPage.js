@@ -3,13 +3,18 @@ import {
   Grid,
   Typography,
   makeStyles,
+  Popper,
+  Fade,
+  Paper,
 } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
-import { Plus } from "react-feather";
+import { Plus, MoreVertical } from "react-feather";
 import { DragDropContext } from "react-beautiful-dnd";
 import { NavLink } from "react-router-dom";
 import Column from "./Column";
 import { shiftTasks } from "../../utility/utilityFunctions/apiCalls";
+import SetLimitDialog from "../dialogs/SetLimitDialog";
+import DeleteColumnDialog from "../dialogs/DeleteColumnDialog";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -67,26 +72,51 @@ const useStyles = makeStyles((theme) => ({
     paddingTop: 0,
   },
   colHeader: {
+    width: "100%",
     position: "sticky",
     top: -1,
     background: "#F4F5F7",
     borderRadius: "5px 5px 0 0",
-    padding: ".6rem 0",
+    padding: ".6rem",
     margin: "0 .4rem",
+    width: "16rem",
     paddingLeft: ".8rem",
     boxShadow: "0 4px 12px -9px #777",
+    transition: "all ease-in-out .2s",
+  },
+  headerText: {
     textTransform: "uppercase",
     fontSize: ".8rem",
     fontWeight: 600,
     fontFamily: "Merriweather Sans",
     color: "#777",
+    transition: "all ease-in-out .2s",
+  },
+  moreIcon: {
+    "&:hover": {
+      cursor: "pointer",
+    },
+  },
+  popper: {
+    padding: ".3rem",
+  },
+  optionBtn: {
+    padding: ".4rem",
+    "&:hover": {
+      cursor: "pointer",
+      backgroundColor: "#f1f5f7",
+    },
   },
 }));
 
 const BoardsPage = ({ project, loading, ...props }) => {
-  console.log(project.columns);
   const classes = useStyles();
   const [addingNewColumn, setAddingNewColumn] = useState(false);
+  const [showSetLimitDialog, setShowSetLimitDialog] = useState(false);
+  const [showDeleteColumnDialog, setShowDeleteColumnDialog] = useState(false);
+  const [open, setOpen] = useState(false);
+  const [activeCol, setActiveCol] = useState(null);
+  const [anchorEl, setAnchorEl] = useState(null);
 
   const addNewColumn = () => {
     setAddingNewColumn(true);
@@ -140,6 +170,14 @@ const BoardsPage = ({ project, loading, ...props }) => {
       });
   };
 
+  const closePopper = () => {
+    setAnchorEl(null);
+    setActiveCol(null);
+    setOpen(false);
+  };
+
+  console.log(project);
+
   return (
     <Grid container direction="column" className={classes.container}>
       <Grid
@@ -149,6 +187,73 @@ const BoardsPage = ({ project, loading, ...props }) => {
           background: "#fff",
         }}
       >
+        {showSetLimitDialog && (
+          <SetLimitDialog
+            show={showSetLimitDialog}
+            setShowSetLimitDialog={setShowSetLimitDialog}
+            column={activeCol}
+            closePopper={closePopper}
+            updateColumn={props.updateColumn}
+          />
+        )}
+        {showDeleteColumnDialog && (
+          <DeleteColumnDialog
+            show={showDeleteColumnDialog}
+            column={activeCol}
+            columns={project.columns.map((column) => ({
+              _id: column._id,
+              title: column.title,
+            }))}
+            fetchAndSetProject={props.fetchAndSetProject}
+            closePopper={closePopper}
+            setShowDeleteColumnDialog={setShowDeleteColumnDialog}
+          />
+        )}
+        <Popper
+          open={open}
+          anchorEl={anchorEl}
+          placement="bottom-end"
+          transition
+        >
+          {({ TransitionProps }) => (
+            <Fade {...TransitionProps} timeout={350}>
+              <Paper elevation={4}>
+                <Grid
+                  container
+                  direction="column"
+                  alignItems="flex-end"
+                  className={classes.popper}
+                >
+                  <Grid container className={classes.optionBtn}>
+                    <Typography
+                      style={{
+                        fontFamily: "Merriweather Sans",
+                        fontSize: ".8rem",
+                        fontWeight: 600,
+                      }}
+                      onClick={() => setShowSetLimitDialog(true)}
+                    >
+                      Set Limit
+                    </Typography>
+                  </Grid>
+                  <Grid container className={classes.optionBtn}>
+                    <Typography
+                      style={{
+                        fontFamily: "Merriweather Sans",
+                        fontSize: ".8rem",
+                        fontWeight: 600,
+                      }}
+                      onClick={() => setShowDeleteColumnDialog(true)}
+                    >
+                      Delete
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Fade>
+          )}
+        </Popper>
+
         <Grid container>
           <NavLink to={`/user/projects`} className={classes.link}>
             <Typography className={classes.textLabelSecondary}>
@@ -185,6 +290,9 @@ const BoardsPage = ({ project, loading, ...props }) => {
             <DragDropContext onDragEnd={handleOnDragEnd}>
               {project.columns.map((column, index) => (
                 <Grid
+                  item
+                  md={3}
+                  xs={12}
                   container
                   direction="column"
                   key={index}
@@ -192,13 +300,55 @@ const BoardsPage = ({ project, loading, ...props }) => {
                     flexWrap: "nowrap",
                   }}
                 >
-                  <Typography className={classes.colHeader}>
-                    {column.title}
-                  </Typography>
+                  <Grid
+                    container
+                    justify="space-between"
+                    className={classes.colHeader}
+                    style={{
+                      backgroundColor:
+                        column.tasks.length >= column.limit
+                          ? "#F9E380"
+                          : "#f4f5f7",
+                    }}
+                  >
+                    <Typography className={classes.headerText}>
+                      {column.title} {column.tasks.length}{" "}
+                      {column.tasks.length === 1 ? "task" : "tasks"}
+                    </Typography>
+                    {column.tasks.length >= column.limit && (
+                      <Typography
+                        className={classes.headerText}
+                        style={{
+                          background: "#F48B00",
+                          padding: ".2rem",
+                          fontSize: ".7rem",
+                          color: "#fff",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {column.limit} max
+                      </Typography>
+                    )}
+                    <Grid
+                      item
+                      xs={1}
+                      container
+                      style={{ maxWidth: "1rem" }}
+                      onClick={(e) => {
+                        if (open && e.target === anchorEl) return closePopper();
+                        setAnchorEl(e.target);
+                        setActiveCol(column);
+                        setOpen(true);
+                      }}
+                    >
+                      <MoreVertical className={classes.moreIcon} />
+                    </Grid>
+                  </Grid>
                   <Column
                     column={column}
                     projectId={project._id}
                     setProject={props.setProject}
+                    fetchAndSetProject={props.fetchAndSetProject}
                     index={index}
                   />
                 </Grid>

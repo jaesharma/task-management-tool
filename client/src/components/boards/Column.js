@@ -9,6 +9,9 @@ import {
 } from "../../utility/utilityFunctions/apiCalls";
 import TaskBlock from "./TaskBlock";
 import { Draggable, Droppable } from "react-beautiful-dnd";
+import { setModalStateAction } from "../../actions/modalActions";
+import { useDispatch, useSelector } from "react-redux";
+import TaskDialog from "../dialogs/TaskDialog";
 
 const useStyles = makeStyles((theme) => ({
   container: {
@@ -24,9 +27,9 @@ const useStyles = makeStyles((theme) => ({
     minHeight: "8rem",
     flexWrap: "nowrap",
     transition: "all ease-in-out .1s",
-    "&::-webkit-scrollbar":{
-      display: "none"
-    }
+    "&::-webkit-scrollbar": {
+      display: "none",
+    },
   },
   title: {
     textTransform: "uppercase",
@@ -47,6 +50,7 @@ const useStyles = makeStyles((theme) => ({
     borderRadius: "4px",
     border: "2px solid #4E9BFF",
     padding: ".5rem",
+    minHeight: "4rem",
   },
   addBtn: {
     padding: ".2rem",
@@ -68,7 +72,12 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
   const [title, setTitle] = useState("");
   const [createIssueText, setCreaetIssueText] = useState("");
   const [addingNewTask, setAddingNewTask] = useState(false);
+  const [taskState, setTaskState] = useState({
+    open: false,
+    id: null,
+  });
   const inputRef = useRef(null);
+  const dispatch = useDispatch();
   const issueInputRef = useRef(null);
 
   useEffect(() => {
@@ -101,6 +110,21 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
       })
       .catch((error) => {
         console.log(error);
+        if (error.response?.data?.error)
+          return dispatch(
+            setModalStateAction({
+              showModal: true,
+              text: error.response.data.error,
+              severity: "error",
+            })
+          );
+        return dispatch(
+          setModalStateAction({
+            showModal: true,
+            text: `Something went wrong`,
+            severity: "error",
+          })
+        );
       });
   };
 
@@ -116,6 +140,21 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
         })
         .catch((error) => {
           console.log(error);
+          if (error.response?.data?.error)
+            return dispatch(
+              setModalStateAction({
+                showModal: true,
+                text: error.response.data.error,
+                severity: "error",
+              })
+            );
+          return dispatch(
+            setModalStateAction({
+              showModal: true,
+              text: `Something went wrong`,
+              severity: "error",
+            })
+          );
         });
     } else if (key === "Escape") {
       props.setAddingNewColumn(false);
@@ -146,6 +185,14 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
     } else if (key === "Escape") {
       setShowCreateIssueBox(false);
     }
+  };
+
+  const showTask = (id) => {
+    setTaskState({ open: true, id });
+  };
+
+  const closeTask = () => {
+    setTaskState({ open: false, id: null });
   };
 
   if (newColumn) {
@@ -196,9 +243,20 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
           direction="column"
           ref={provided.innerRef}
           className={`${classes.container} tasks`}
+          style={{
+            backgroundColor:
+              column.tasks.length >= column.limit ? "#F9E380" : "#f4f5f7",
+          }}
           onMouseOver={() => setShowCreateBtn(true)}
           onMouseLeave={() => setShowCreateBtn(false)}
         >
+          {taskState.open && (
+            <TaskDialog
+              {...taskState}
+              fetchAndSetProject={props.fetchAndSetProject}
+              handleClose={closeTask}
+            />
+          )}
           {column.tasks.map((task, index) => (
             <Draggable key={task._id} draggableId={task._id} index={task.order}>
               {(provided) => (
@@ -208,6 +266,7 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
                   removeTask={removeTask}
                   index={index}
                   innerref={provided.innerRef}
+                  showTask={showTask}
                 />
               )}
             </Draggable>
@@ -215,11 +274,12 @@ const Column = ({ projectId, column, newColumn, ...props }) => {
           {addingNewTask && (
             <Skeleton
               variant="rect"
-              width={210}
+              width={230}
               height={118}
               style={{
                 marginTop: ".3rem",
                 borderRadius: "4px",
+                minHeight: "5rem",
               }}
             />
           )}

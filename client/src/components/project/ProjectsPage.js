@@ -45,6 +45,17 @@ const useStyles = makeStyles((theme) => ({
       backgroundColor: "#5275ff",
     },
   },
+  blueBtn: {
+    backgroundColor: "#4165FF",
+    color: "white",
+    fontWeight: 600,
+    fontSize: ".7rem",
+    fontFamily: "Merriweather Sans",
+    padding: ".6rem .4rem",
+    "&:hover": {
+      backgroundColor: "#2847c9",
+    },
+  },
 }));
 
 const ProjectsPage = (props) => {
@@ -85,7 +96,20 @@ const ProjectsPage = (props) => {
 
   return (
     <Grid container direction="column" className={classes.container}>
-      <Typography className={classes.t1}>Projects</Typography>
+      <Grid container direction="column">
+        <Grid container justify="space-between">
+          <Typography className={classes.t1}>Projects</Typography>
+          <Button
+            className={classes.btnStyles}
+            variant="contained"
+            color="primary"
+            onClick={() => dispatch(setCreateProjectDialogAction(true))}
+            disableElevation
+          >
+            create project
+          </Button>
+        </Grid>
+      </Grid>
       {loading ? (
         <CircularProgress size={18} />
       ) : projects.length ? (

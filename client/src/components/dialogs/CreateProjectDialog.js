@@ -140,7 +140,7 @@ const CreateProjectDialog = () => {
         );
         setCreating(false);
         handleClose();
-        history.push(`/projects/${project._id}/boards`);
+        history.push(`/projects/${project._id}/board`);
       })
       .catch((error) => {
         setCreating(false);

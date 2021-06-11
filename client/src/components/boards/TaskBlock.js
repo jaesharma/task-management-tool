@@ -6,34 +6,54 @@ import {
   Fade,
   Paper,
   Divider,
+  CircularProgress,
 } from "@material-ui/core";
 import React, { useEffect, useState } from "react";
 import { MoreHorizontal } from "react-feather";
+import { useDispatch } from "react-redux";
 
 const useStyles = makeStyles((theme, props) => ({
   container: {
     background: "#fff",
-    padding: "1rem",
+    padding: "3px",
     borderRadius: "4px",
-    minHeight: "5rem",
     margin: "4px 0",
     width: "100%",
     transition: "all ease-in-out .2s",
     boxShadow: (props) =>
       props.index > 0
-        ? "0px 16px 6px 5px #ddd, 0px 8px 16px -2px #ddd inset"
-        : "0px 16px 6px 5px #ddd",
+        ? "0px 6px 12px 5px #777, 0px 6px 12px -4px #777 inset"
+        : "0px 16px 6px 5px #777",
 
     "&:hover": {
       background: "#B3D4FF",
       cursor: "pointer",
     },
   },
-  optionBtn: {
-    padding: ".6rem",
+  subContainer: {
+    minHeight: "4rem",
+    padding: "8px",
+    transition: "all ease-in-out .2s",
     "&:hover": {
-      background: "#efefef",
+      background: "#B3D4FF",
       cursor: "pointer",
+    },
+  },
+  popper: {
+    padding: ".3rem",
+    width: "6rem",
+  },
+  optionBtn: {
+    padding: ".4rem",
+    "&:hover": {
+      cursor: "pointer",
+      backgroundColor: "#f1f5f7",
+    },
+  },
+  disabled: {
+    "&:hover": {
+      cursor: "default",
+      backgroundColor: "#fff",
     },
   },
 }));
@@ -43,75 +63,117 @@ const TaskBlock = ({ task, provided, ...props }) => {
   const [showOptionsBtn, setShowOptionsBtn] = useState(false);
   const [open, setOpen] = useState(false);
   const [anchorEl, setAnchorEl] = useState(null);
+  const [inAction, setInAction] = useState(false);
 
   useEffect(() => {
     if (anchorEl) setOpen(true);
   }, [anchorEl]);
 
+  const handleClose = () => {
+    setOpen(false);
+    setInAction(false);
+    setShowOptionsBtn(false);
+    setAnchorEl(null);
+  };
+
+  const removeTaskHandler = () => {
+    setOpen(false);
+    setInAction(true);
+    handleClose();
+    props.removeTask(task._id);
+  };
+
+  const taskClickHandler = () => {
+    props.showTask(task._id);
+  };
+
   return (
-    <Grid
-      container
+    <Paper
+      elevation={18}
       className={`${classes.container} ${task._id}`}
       ref={props.innerref}
       {...provided.draggableProps}
       {...provided.dragHandleProps}
       onMouseOver={() => setShowOptionsBtn(true)}
-      onMouseLeave={() => {
-        setOpen(false);
-        setAnchorEl(null);
-        setShowOptionsBtn(false);
-      }}
+      onMouseLeave={() => handleClose()}
     >
-      <Popper open={open} anchorEl={anchorEl} placement="bottom-end" transition>
-        {({ TransitionProps }) => (
-          <Fade {...TransitionProps} timeout={350}>
-            <Paper>
-              <Grid container direction="column" alignItems="flex-end">
-                <Grid
-                  className={classes.optionBtn}
-                  onClick={() => props.removeTask(task._id)}
-                >
-                  <Typography
-                    style={{
-                      color: "red",
-                      fontFamily: "Merriweather Sans",
-                      fontSize: ".8rem",
-                      fontWeight: 600,
-                    }}
-                  >
-                    Delete
-                  </Typography>
-                  <Divider />
-                </Grid>
-              </Grid>
-            </Paper>
-          </Fade>
-        )}
-      </Popper>
-      <Grid item xs={10}>
-        <Typography
-          style={{
-            width: "100%",
-            wordWrap: "break-word",
-          }}
+      <Grid container className={`${classes.subContainer}`}>
+        <Popper
+          open={open}
+          anchorEl={anchorEl}
+          placement="bottom-end"
+          transition
         >
-          {task.summary}
-        </Typography>
-      </Grid>
-      <Grid>
-        {showOptionsBtn && (
-          <MoreHorizontal
-            onClick={(e) => {
-              if (anchorEl) {
-                setOpen(false);
-                return setAnchorEl(null);
-              }
-              setAnchorEl(e.target);
+          {({ TransitionProps }) => (
+            <Fade {...TransitionProps} timeout={150}>
+              <Paper elevation={14}>
+                <Grid
+                  container
+                  direction="column"
+                  alignItems="flex-end"
+                  className={classes.popper}
+                >
+                  <Grid
+                    container
+                    className={`${classes.optionBtn} ${classes.disabled}`}
+                  >
+                    <Typography
+                      style={{
+                        fontFamily: "Merriweather Sans",
+                        fontSize: ".8rem",
+                        color: "#888",
+                        fontWeight: 600,
+                      }}
+                    >
+                      Actions
+                    </Typography>
+                  </Grid>
+                  <Divider color="blue" style={{ width: "100%" }} />
+                  <Grid container className={classes.optionBtn}>
+                    <Typography
+                      style={{
+                        fontFamily: "Merriweather Sans",
+                        fontSize: ".8rem",
+                        fontWeight: 600,
+                      }}
+                      onClick={() => removeTaskHandler()}
+                    >
+                      Delete
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Paper>
+            </Fade>
+          )}
+        </Popper>
+
+        <Grid item xs={10} onClick={() => taskClickHandler()}>
+          <Typography
+            style={{
+              width: "100%",
+              wordWrap: "break-word",
             }}
-          />
-        )}
+          >
+            {task.summary}
+          </Typography>
+        </Grid>
+        <Grid>
+          {inAction && <CircularProgress size={18} color="secondary" />}
+
+          {!inAction && showOptionsBtn && (
+            <MoreHorizontal
+              onClick={(e) => {
+                if (anchorEl) {
+                  setOpen(false);
+                  return setAnchorEl(null);
+                }
+                setAnchorEl(e.target);
+              }}
+            />
+          )}
+        </Grid>
       </Grid>
-    </Grid>
+    </Paper>
   );
 };
 

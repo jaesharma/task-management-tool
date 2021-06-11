@@ -1,4 +1,6 @@
-import { SET_CREATE_PROJECT_DIALOG } from "../actions/actionTypes";
+import {
+  SET_CREATE_PROJECT_DIALOG,
+} from "../actions/actionTypes";
 
 const initialState = {
   showCreateProjectDialog: false,

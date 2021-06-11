@@ -365,7 +365,7 @@ const ProjectListTable = () => {
           _id,
           title,
           icon,
-          project.key,
+          project.project.key,
           project.starred,
           project.project.members.length,
           leadId,
@@ -508,7 +508,7 @@ const ProjectListTable = () => {
                         }}
                       >
                         <NavLink
-                          to={`/projects/${row.id}`}
+                          to={`/projects/${row.id}/board`}
                           className={classes.titleLink}
                         >
                           <Grid

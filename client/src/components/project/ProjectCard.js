@@ -9,6 +9,7 @@ const useStyles = makeStyles((theme) => ({
     minHeight: "10rem",
     maxHeight: "10rem",
     border: "1px solid #eee",
+    margin: ".5rem",
     borderRadius: "3px",
     transition: "all .4s ease-in-out",
     "&:hover": {

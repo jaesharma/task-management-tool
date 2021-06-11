@@ -124,3 +124,27 @@ export const deleteTask = (id) => {
   setConfigs();
   return axios.delete(`/tasks/${id}`, configs);
 };
+
+export const setColumnLimit = ({ limit, colId }) => {
+  setConfigs();
+  return axios.patch(`/columns/${colId}`, { limit }, configs);
+};
+
+export const deleteColumn = ({ deleteColumnId, shiftToColumnId }) => {
+  setConfigs();
+  return axios.post(
+    `/columns/delete`,
+    { deleteColumnId, shiftToColumnId },
+    configs
+  );
+};
+
+export const getTaskById = (id) => {
+  setConfigs();
+  return axios.get(`/tasks/${id}`, configs);
+};
+
+export const updateTask = ({ id, updates }) => {
+  setConfigs();
+  return axios.patch(`/tasks/${id}`, { ...updates }, configs);
+};

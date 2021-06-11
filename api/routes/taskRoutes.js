@@ -142,4 +142,54 @@ router.delete("/:id", authAsUser, async (req, res) => {
   }
 });
 
+router.get("/:id", authAsUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userProjects = req.user.projects.map(
+      (project) => project.project._id
+    );
+    //check if user have access to the task
+    const task = await Task.findById(id)
+      .populate(["comments", "reporter", "subtasks"])
+      .populate({
+        path: "assignee",
+        populate: ["to", "by"],
+      });
+    if (!task) return res.status(404).send({ error: "Task does not exist." });
+    res.send({ task });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.patch("/:id", authAsUser, async (req, res) => {
+  try {
+    const { id } = req.params;
+    let { summary, description } = req.body;
+    const task = await Task.findById(id);
+    if (!task) return res.status(404).send({ error: "Task not found!" });
+    summary = summary?.trim()?.length ? summary.trim() : task.summary;
+    description = description?.trim()?.length
+      ? description.trim()
+      : task.description;
+    await task.updateOne({ summary, description });
+    const updatedTask = await Task.findById(id)
+      .populate(["comments", "reporter", "subtasks"])
+      .populate({
+        path: "assignee",
+        populate: ["to", "by"],
+      });
+
+    res.send({ task: updatedTask });
+  } catch (error) {
+    console.log(error);
+    res.status(500).send({
+      error: "Internal server error.",
+    });
+  }
+});
+
 export default router;

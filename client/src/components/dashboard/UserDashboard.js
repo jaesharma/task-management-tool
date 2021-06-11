@@ -67,6 +67,13 @@ const useStyles = makeStyles((theme) => ({
     minWidth: "100%",
     minHeight: "18rem",
   },
+  headingLink: {
+    color: "#444",
+    textDecoration: "none",
+    "&:hover": {
+      color: "#4273fd",
+    },
+  },
 }));
 
 const listMenus = [
@@ -197,9 +204,11 @@ const UserDashboard = () => {
                 View all projects
               </NavLink>
             </Grid>
-            {projects.map((project) => (
-              <ProjectCard project={project.project} />
-            ))}
+            <Grid container className={classes.rowContainer}>
+              {projects.slice(0, 5).map((project) => (
+                <ProjectCard project={project.project} />
+              ))}
+            </Grid>
           </>
         ) : (
           <Grid
@@ -263,8 +272,10 @@ const UserDashboard = () => {
               justify="flex-end"
               style={{ flexWrap: "nowrap", height: "100%", maxWidth: "2rem" }}
             >
-              <Star size={15} onClick={() => unstar(project.project._id)}
-              className={classes.starred}
+              <Star
+                size={15}
+                onClick={() => unstar(project.project._id)}
+                className={classes.starred}
               />
             </Grid>
             <Grid
@@ -282,7 +293,12 @@ const UserDashboard = () => {
               />
             </Grid>
             <Grid item xs={4} container direction="column" justify="flex-start">
-              <Typography>{project.project.title}</Typography>
+              <NavLink
+                to={`/projects/${project.project._id}/board`}
+                className={classes.headingLink}
+              >
+                <Typography>{project.project.title}</Typography>
+              </NavLink>
             </Grid>
           </Grid>
         ))}
