@@ -20,10 +20,13 @@ const UsersPage = (props) => {
         <Typography
           varaint="h4"
           style={{
-            fontWeight: 800,
+            fontWeight: 600,
+            fontFamily: "Merriweather Sans",
+            fontSize: "1.2rem",
+            color: "#172B52",
           }}
         >
-          Users
+          Employees
         </Typography>
         <Grid>
           <Button

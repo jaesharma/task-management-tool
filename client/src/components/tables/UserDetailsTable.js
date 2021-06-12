@@ -99,25 +99,13 @@ const headCells = [
     id: "User",
     numeric: false,
     disablePadding: false,
-    label: "User",
+    label: "Employee",
   },
   {
     id: "role",
     numeric: false,
     disablePadding: false,
     label: "Role",
-  },
-  {
-    id: "projects-working-on",
-    numeric: true,
-    disablePadding: false,
-    label: "Projects working on",
-  },
-  {
-    id: "last-activity",
-    numeric: true,
-    disablePadding: false,
-    label: "Last activity",
   },
   { id: "action", numeric: false, disablePadding: false, label: "Action" },
   {
@@ -142,13 +130,7 @@ function EnhancedTableHead(props) {
     onRequestSort(event, property);
   };
 
-  const allowSortOn = [
-    "user",
-    "role",
-    "projects-working-on",
-    "joined",
-    "last-activity",
-  ];
+  const allowSortOn = ["user", "role", "joined"];
 
   return (
     <TableHead>
@@ -157,7 +139,8 @@ function EnhancedTableHead(props) {
         {headCells.map((headCell) => (
           <TableCell
             key={headCell.id}
-            align={headCell.numeric ? "right" : "left"}
+            // align={headCell.numeric ? "right" : "left"}
+            align={headCell.label === "Employee" ? "left" : "center"}
             padding={headCell.disablePadding ? "none" : "default"}
             sortDirection={orderBy === headCell.id ? order : false}
           >
@@ -344,7 +327,6 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
   const [roles, setRoles] = useState([]);
   const [updating, setUpdating] = useState(false);
   const confirmation = useConfirm();
-  // const [projectsToRender, setProjectsToRender] = useState([]);
 
   const resentInvite = (email) => {
     confirmation({
@@ -650,7 +632,14 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                   return (
                     <TableRow>
                       <TableCell padding="checkbox"></TableCell>
-                      <TableCell component="th" scope="row" padding="none">
+                      <TableCell
+                        component="th"
+                        scope="row"
+                        padding="none"
+                        style={{
+                          maxWidth: "4rem",
+                        }}
+                      >
                         <Grid
                           container
                           direction="row"
@@ -668,15 +657,34 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                         </Grid>
                       </TableCell>
 
-                      <TableCell>{row.userRole}</TableCell>
-                      <TableCell>{row.lastActivity}</TableCell>
-                      <TableCell>
-                        <Skeleton />
+                      <TableCell
+                        style={{
+                          textAlign: "center",
+                          alignSelf: "center",
+                        }}
+                      >
+                        <Grid container justify="center">
+                          <Skeleton variant="rect" width={150} height={40} />
+                        </Grid>
                       </TableCell>
-                      <TableCell>
-                        <Skeleton />
+                      <TableCell
+                        style={{
+                          textAlign: "center",
+                        }}
+                      >
+                        <Grid container justify="center">
+                          <Skeleton variant="rect" width={150} height={40} />
+                        </Grid>
                       </TableCell>
-                      <TableCell>{row.createdAt}</TableCell>
+                      <TableCell
+                        style={{
+                          textAlign: "center",
+                        }}
+                      >
+                        <Grid container justify="center">
+                          <Skeleton variant="rect" width={150} height={40} />
+                        </Grid>
+                      </TableCell>
                     </TableRow>
                   );
                 })}
@@ -723,6 +731,9 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                             id={labelId}
                             scope="row"
                             padding="none"
+                            style={{
+                              maxWidth: "4rem",
+                            }}
                           >
                             <NavLink
                               to={`/users/${row.id}`}
@@ -751,9 +762,9 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                                       fontSize: "1.4rem",
                                       margin: ".3rem",
                                     }}
-                                  >
-                                    {row.name.charAt(0)}
-                                  </Avatar>
+                                  />
+                                  //   {row.name.charAt(0)}
+                                  // </Avatar>
                                 )}
                                 <Grid
                                   container
@@ -775,7 +786,14 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                               </Grid>
                             </NavLink>
                           </TableCell>
-                          <TableCell size="small">
+                          <TableCell
+                            size="small"
+                            style={{
+                              maxWidth: "100px",
+                              textAlign: "center",
+                              alignItems: "center",
+                            }}
+                          >
                             <FormControl className={classes.margin}>
                               <Select
                                 labelId="select-role"
@@ -791,12 +809,12 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                               </Select>
                             </FormControl>
                           </TableCell>
-                          <TableCell align="center">{row.projects}</TableCell>
-                          <TableCell align="center">
-                            {row.lastActivity}
-                          </TableCell>
                           <TableCell
                             className={classes.link}
+                            style={{
+                              textAlign: "center",
+                              alignItems: "center",
+                            }}
                             onClick={() => resentInvite(row.email)}
                           >
                             Resend invite
@@ -826,6 +844,9 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                           id={labelId}
                           scope="row"
                           padding="none"
+                          style={{
+                            maxWidth: "4rem",
+                          }}
                         >
                           <NavLink
                             to={`/users/${row.id}`}
@@ -835,8 +856,12 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                               container
                               direction="row"
                               style={{
+                                maxWidth: "15rem",
                                 flexWrap: "nowrap",
                                 padding: ".8rem",
+                                overflow: "hidden",
+                                whiteSpace: "nowrap",
+                                textOverflow: "ellipsis",
                               }}
                             >
                               {row.avatar ? (
@@ -854,15 +879,17 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                                     fontSize: "1.4rem",
                                     margin: ".3rem",
                                   }}
-                                >
-                                  {row.name.charAt(0)}
-                                </Avatar>
+                                />
+                                //   {row.name.charAt(0)}
+                                // </Avatar>
                               )}
                               <Grid
                                 container
                                 direction="column"
                                 style={{
                                   marginLeft: ".5rem",
+                                  textOverflow: "ellipsis",
+                                  maxWidth: "14rem",
                                 }}
                               >
                                 <Typography>{row.name}</Typography>
@@ -870,6 +897,10 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                                   style={{
                                     color: "#777",
                                     fontSize: ".8rem",
+                                    whiteSpace: "nowrap",
+                                    textOverflow: "ellipsis",
+                                    overflow: "hidden",
+                                    maxWidth: "10rem",
                                   }}
                                 >
                                   {row.email}
@@ -886,20 +917,24 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                               whiteSpace: "nowrap",
                               overflow: "hidden",
                               textOverflow: "ellipsis",
+                              alignSelf: "center",
+                              textAlign: "center",
                             }}
                           >
                             {row.userRole.title.toUpperCase()}
                           </TableCell>
                         </Tooltip>
-                        <TableCell align="center">{row.projects}</TableCell>
-                        <TableCell align="center">{row.lastActivity}</TableCell>
                         <TableCell
                           className={classes.link}
                           onClick={() => resentInvite(row.email)}
+                          style={{
+                            alignSelf: "center",
+                            textAlign: "center",
+                          }}
                         >
                           Resend invite
                         </TableCell>
-                        <TableCell align="start">{row.createdAt}</TableCell>
+                        <TableCell align="center">{row.createdAt}</TableCell>
                       </TableRow>
                     );
                   })}

@@ -10,12 +10,10 @@ import {
   Typography,
   Divider,
   IconButton,
-  Badge,
   Container,
 } from "@material-ui/core";
 import ChevronLeftIcon from "@material-ui/icons/ChevronLeft";
 import MenuIcon from "@material-ui/icons/Menu";
-import NotificationsIcon from "@material-ui/icons/Notifications";
 import MainListItems from "./MainListItems";
 import InviteUserDialog from "../dialogs/InviteUserDialog";
 import ExportCSVDialog from "../dialogs/ExportCSVDialog";

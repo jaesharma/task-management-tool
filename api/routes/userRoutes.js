@@ -15,6 +15,9 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 router.get("/", auth, async (req, res) => {
   try {
     let { order, orderBy = "username", limit, skip = 0, search } = req.query;
+    if(orderBy==="joined") orderBy="createdAt"
+    if(orderBy==="role") orderBy="userRole"
+    console.log(req.query)
     limit = +limit;
     skip = +skip;
     if (!limit || limit < 0) limit = 5;
