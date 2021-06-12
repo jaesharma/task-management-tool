@@ -145,7 +145,7 @@ const UserDashboard = () => {
   const filterStarredProjects = () => {
     const starredProjectIds = user.projects
       .filter((project) => project.starred)
-      .map((project) => project.project);
+      .map((project) => project.project._id);
     const starredProjects = projects.filter((project) =>
       starredProjectIds.includes(project.project._id)
     );

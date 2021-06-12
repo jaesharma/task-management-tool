@@ -1,11 +1,9 @@
-import axios from "../utility/axios/apiInstance";
 import {
   LOGGED_IN,
   LOGOUT,
   SETUP_INITIAL_PROFILE,
   SETUP_PROFILE,
 } from "./actionTypes";
-import store from "../store";
 
 export const loginAdminAction = (token, profile) => {
   localStorage.setItem("authToken", token);

@@ -15,7 +15,7 @@ const authAsUser = async (req, res, next) => {
     const user = await User.findOne({
       _id,
       "tokens.token": token,
-    });
+    }).populate("projects.project");
     if (!user) return res.status(401).send({ error: "Please authenticate!" });
     req.user = user;
     req.as = as;

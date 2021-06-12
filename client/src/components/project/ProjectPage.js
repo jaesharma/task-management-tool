@@ -9,7 +9,7 @@ import {
 import { useDispatch } from "react-redux";
 import { setModalStateAction } from "../../actions/modalActions";
 import { getProjectById } from "../../utility/utilityFunctions/apiCalls";
-import { NavLink, Redirect, Route, Router, Switch } from "react-router-dom";
+import { Route, Switch } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "react-feather";
 import BoardsPage from "../boards/BoardsPage";
 import ProjectSettingsPage from "./ProjectSettingsPage";

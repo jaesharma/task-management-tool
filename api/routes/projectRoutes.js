@@ -1,12 +1,7 @@
 import express from "express";
-import { Schema } from "mongoose";
-import auth from "../middlewares/auth";
-import authAsAdmin from "../middlewares/authAsAdmin";
 import authAsUser from "../middlewares/authAsUser";
-import { Admin, Column, Project, Role, User, UserRole } from "../models/index";
+import { Column, Project, Role, User, UserRole } from "../models/index";
 import mongoose from "mongoose";
-import project from "../models/project";
-import user from "../models/user";
 const ObjectId = mongoose.Types.ObjectId;
 const router = new express.Router();
 
@@ -37,7 +32,7 @@ router.get("/:pid", authAsUser, async (req, res) => {
   try {
     const { pid } = req.params;
     const userProject = req.user.projects.find(
-      (project) => project.project.toString() === pid.toString()
+      (project) => project.project._id.toString() === pid.toString()
     );
     if (!userProject)
       return res

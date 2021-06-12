@@ -6,6 +6,7 @@ import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
 import { Admin, User, UserRole } from "../models/index";
 import generatePassword from "password-generator";
+import user from "../models/user";
 const ObjectId = require("mongoose").Types.ObjectId;
 const router = new express.Router();
 const sgMail = require("@sendgrid/mail");
@@ -96,7 +97,7 @@ router.post("/login", async (req, res) => {
     }
     const user = await User.findOne({
       email,
-    });
+    }).populate("projects.project");
     if (!user) {
       return res.status(404).send({
         error: "Invalid Email Address!",
@@ -286,6 +287,40 @@ router.post("/delete", authAsAdmin, async (req, res) => {
       },
     });
     res.send();
+  } catch (error) {
+    res.status(500).send({
+      error: "Internal Server Error!",
+    });
+  }
+});
+
+router.patch("/", authAsUser, async (req, res) => {
+  try {
+    const {
+      name = req.user.name,
+      username = req.user.username,
+      jobTitle = req.user.about?.jobTitle,
+      department = req.user.about?.department,
+      organization = req.user.about?.organization,
+      location = req.user.about.location,
+      email = req.user.email,
+    } = req.body;
+    const updates = {
+      name,
+      username,
+      email,
+      about: {
+        jobTitle,
+        department,
+        organization,
+        location,
+      },
+    };
+    await req.user.updateOne({ ...updates });
+    const profile = await User.findById(req.user._id).populate(
+      "projects.project"
+    );
+    res.send({ profile });
   } catch (error) {
     res.status(500).send({
       error: "Internal Server Error!",

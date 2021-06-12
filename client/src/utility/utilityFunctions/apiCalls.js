@@ -148,3 +148,8 @@ export const updateTask = ({ id, updates }) => {
   setConfigs();
   return axios.patch(`/tasks/${id}`, { ...updates }, configs);
 };
+
+export const updateProfile = (updates) => {
+  setConfigs();
+  return axios.patch(`/users`, updates, configs);
+};

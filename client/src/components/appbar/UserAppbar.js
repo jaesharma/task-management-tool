@@ -1,31 +1,31 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState } from "react";
 import { fade, makeStyles } from "@material-ui/core/styles";
-import AppBar from "@material-ui/core/AppBar";
-import Toolbar from "@material-ui/core/Toolbar";
-import IconButton from "@material-ui/core/IconButton";
-import Typography from "@material-ui/core/Typography";
-import InputBase from "@material-ui/core/InputBase";
-import Badge from "@material-ui/core/Badge";
-import MenuItem from "@material-ui/core/MenuItem";
-import Menu from "@material-ui/core/Menu";
-import MenuIcon from "@material-ui/icons/Menu";
-import SearchIcon from "@material-ui/icons/Search";
-import AccountCircle from "@material-ui/icons/AccountCircle";
-import MailIcon from "@material-ui/icons/Mail";
-import NotificationsIcon from "@material-ui/icons/Notifications";
-import MoreIcon from "@material-ui/icons/MoreVert";
-import { Avatar, Divider, Grid } from "@material-ui/core";
-import { logout } from "../../utility/utilityFunctions/apiCalls";
-import { useDispatch, useSelector } from "react-redux";
 import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  InputBase,
+  Typography,
+  Badge,
+  Menu,
+  MenuItem,
+  Avatar,
+  Divider,
+  Grid,
+  Hidden,
   ClickAwayListener,
   Popper,
   Grow,
+  Slide,
   Paper,
-  Fade,
   MenuList,
 } from "@material-ui/core";
-import { Divide } from "react-feather";
+import SearchIcon from "@material-ui/icons/Search";
+import { logout } from "../../utility/utilityFunctions/apiCalls";
+import MailIcon from "@material-ui/icons/Mail";
+import NotificationsIcon from "@material-ui/icons/Notifications";
+import MoreIcon from "@material-ui/icons/MoreVert";
+import { useDispatch, useSelector } from "react-redux";
 import { logoutAction } from "../../actions/authActions";
 import { setModalStateAction } from "../../actions/modalActions";
 import { NavLink } from "react-router-dom";
@@ -42,6 +42,13 @@ const useStyles = makeStyles((theme) => ({
     fontFamily: "Merriweather sans",
     [theme.breakpoints.up("sm")]: {
       display: "block",
+    },
+  },
+  smTitle: {
+    display: "block",
+    fontFamily: "Merriweather sans",
+    [theme.breakpoints.up("sm")]: {
+      display: "none",
     },
   },
   iconBtnStyles: {},
@@ -61,19 +68,16 @@ const useStyles = makeStyles((theme) => ({
     },
   },
   customToolbar: {
-    minHeight: 36,
+    minHeight: 50,
+    maxHeight: 50,
     backgroundColor: "#fff",
     color: "black",
     padding: "0 1rem",
   },
   avatar: {
-    width: "1.1rem",
-    height: "1.1rem",
-    padding: ".4rem",
+    width: theme.spacing(4),
+    height: theme.spacing(4),
     transition: "all ease-in-out .2s",
-    "&:hover": {
-      boxShadow: "0 0 4px 3px #75a8ff",
-    },
   },
   searchIcon: {
     padding: theme.spacing(0, 2),
@@ -103,6 +107,12 @@ const useStyles = makeStyles((theme) => ({
     [theme.breakpoints.up("md")]: {
       width: "20ch",
     },
+  },
+  link: {
+    color: "#253858",
+    textDecoration: "none",
+    fontFamily: "Merriweather Sans",
+    fontWeight: 600,
   },
   sectionDesktop: {
     display: "none",
@@ -182,8 +192,7 @@ const UserAppbar = () => {
         <Grow
           {...TransitionProps}
           style={{
-            transformOrigin:
-              placement === "bottom" ? "center top" : "center bottom",
+            transformOrigin: "top right",
           }}
         >
           <Paper>
@@ -269,7 +278,7 @@ const UserAppbar = () => {
       <AppBar position="fixed">
         <Toolbar className={classes.customToolbar} disableGutters>
           <Grid container alignItems="center" style={{ flexWrap: "nowrap" }}>
-            <Grid item xs={3}>
+            <Grid item xs={3} container style={{ lexWrap: "nowrap" }}>
               <NavLink
                 to="/"
                 style={{
@@ -287,23 +296,42 @@ const UserAppbar = () => {
                 >
                   Task Management Portal
                 </Typography>
+                <Typography
+                  className={classes.smTitle}
+                  variant="h6"
+                  noWrap
+                  style={{
+                    width: "100%",
+                  }}
+                >
+                  TMP
+                </Typography>
               </NavLink>
             </Grid>
-            <Grid item xs={5} container></Grid>
-            <Grid item xs={4} container justify="flex-end" alignItems="center">
-              <div className={classes.search}>
-                <div className={classes.searchIcon}>
-                  <SearchIcon />
+            <Grid item xs={5} container style={{ minHeight: "100%" }}></Grid>
+            <Grid
+              item
+              xs={4}
+              container
+              justify="flex-end"
+              alignItems="center"
+              style={{ flexWrap: "nowrap" }}
+            >
+              <Hidden mdDown>
+                <div className={classes.search}>
+                  <div className={classes.searchIcon}>
+                    <SearchIcon />
+                  </div>
+                  <InputBase
+                    placeholder="Search…"
+                    classes={{
+                      root: classes.inputRoot,
+                      input: classes.inputInput,
+                    }}
+                    inputProps={{ "aria-label": "search" }}
+                  />
                 </div>
-                <InputBase
-                  placeholder="Search…"
-                  classes={{
-                    root: classes.inputRoot,
-                    input: classes.inputInput,
-                  }}
-                  inputProps={{ "aria-label": "search" }}
-                />
-              </div>
+              </Hidden>
               <div className={classes.sectionDesktop}>
                 <IconButton
                   edge="end"
@@ -317,7 +345,11 @@ const UserAppbar = () => {
                   className={classes.iconBtnStyles}
                 >
                   {!!user && user.avatar ? (
-                    <Avatar className={classes.avatar} alt="avatar" />
+                    <Avatar
+                      className={classes.avatar}
+                      alt="avatar"
+                      src={user.avatar}
+                    />
                   ) : (
                     <Avatar className={classes.avatar}>
                       {user.username.charAt(0)}{" "}
@@ -343,7 +375,7 @@ const UserAppbar = () => {
       {renderMobileMenu}
       <Popper open={open} placement="bottom-end" anchorEl={anchorEl} transition>
         {({ TransitionProps }) => (
-          <Grow
+          <Slide
             {...TransitionProps}
             timeout={350}
             style={{ transformOrigin: "0 0 0 0" }}
@@ -355,16 +387,23 @@ const UserAppbar = () => {
                   id="menu-list-grow"
                   onKeyDown={handleListKeyDown}
                 >
-                  <MenuItem>Profile</MenuItem>
-                  <MenuItem>My account</MenuItem>
+                  <MenuItem>
+                    <NavLink to="/profile" className={classes.link}>
+                      My account
+                    </NavLink>
+                  </MenuItem>
                   <Divider />
-                  <MenuItem button onClick={() => logoutHandler()}>
+                  <MenuItem
+                    button
+                    onClick={() => logoutHandler()}
+                    className={classes.link}
+                  >
                     Logout
                   </MenuItem>
                 </MenuList>
               </ClickAwayListener>
             </Paper>
-          </Grow>
+          </Slide>
         )}
       </Popper>
     </div>
