@@ -18,6 +18,9 @@ import {
   Avatar,
   Button,
   CircularProgress,
+  FormControl,
+  Select,
+  MenuItem,
   Tooltip,
 } from "@material-ui/core";
 import moment from "moment";
@@ -35,9 +38,6 @@ import {
   getUserRoles,
   updateUser,
 } from "../../utility/utilityFunctions/apiCalls";
-import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
-import Select from "@material-ui/core/Select";
 import Skeleton from "@material-ui/lab/Skeleton";
 
 function createData(
@@ -218,6 +218,10 @@ const useToolbarStyles = makeStyles((theme) => ({
       minWidth: "14rem",
     },
   },
+  formControl: {
+    margin: theme.spacing(1),
+    minWidth: 120,
+  },
   searchbarFocused: {
     border: "1px solid #999",
   },
@@ -314,7 +318,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
   const [users, setUsers] = useState([]);
   const [total, setTotal] = useState(1);
   const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("username");
+  const [orderBy, setOrderBy] = useState("name");
   const [selected, setSelected] = useState([]);
   const [selectedIds, setSelectedIds] = useState([]);
   const [page, setPage] = useState(0);
@@ -395,7 +399,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
       } = user;
       if (
         !searchText.trim().length ||
-        username.toLowerCase().startsWith(searchText.trim().toLowerCase())
+        name.toLowerCase().startsWith(searchText.trim().toLowerCase())
       ) {
         dataRows.push(
           createData(
@@ -432,7 +436,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
   const fetchAndSetUsers = (args) => {
     getUsers({
       order,
-      orderBy: orderBy === "User" ? "username" : orderBy,
+      orderBy: orderBy === "User" ? "name" : orderBy,
       limit:
         args && args.refetch
           ? (page + 1) * rowsPerPage
@@ -484,35 +488,6 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
   const deselectAll = () => {
     setSelected([]);
     setSelectedIds([]);
-  };
-
-  const handleClick = (event, username, id) => {
-    if (event.target.innerText === "Resend invite") return;
-    const selectedIndex = selected.indexOf(username);
-    let newSelected = [];
-
-    if (selectedIndex === -1) {
-      newSelected = newSelected.concat(selected, username);
-    } else if (selectedIndex === 0) {
-      newSelected = newSelected.concat(selected.slice(1));
-    } else if (selectedIndex === selected.length - 1) {
-      newSelected = newSelected.concat(selected.slice(0, -1));
-    } else if (selectedIndex > 0) {
-      newSelected = newSelected.concat(
-        selected.slice(0, selectedIndex),
-        selected.slice(selectedIndex + 1)
-      );
-    }
-
-    setSelectedIds((prevState) => {
-      if (prevState.includes(id)) {
-        return prevState.filter((theid) => theid !== id);
-      } else {
-        return Array.from(new Set([...prevState].concat(id)));
-      }
-    });
-
-    setSelected(newSelected);
   };
 
   const updateUsers = () => {
@@ -637,7 +612,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                         scope="row"
                         padding="none"
                         style={{
-                          maxWidth: "4rem",
+                          maxWidth: "8rem",
                         }}
                       >
                         <Grid
@@ -645,12 +620,13 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                           direction="row"
                           style={{
                             flexWrap: "nowrap",
+                            padding: ".8rem",
                           }}
                         >
                           <Skeleton variant="circle" width={40} height={40} />
                           <Skeleton
                             variant="rect"
-                            width={150}
+                            width={220}
                             height={40}
                             style={{ marginLeft: ".2rem" }}
                           />
@@ -661,6 +637,9 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                         style={{
                           textAlign: "center",
                           alignSelf: "center",
+                          maxWidth: "100px",
+                          whiteSpace: "nowrap",
+                          overflow: "hidden",
                         }}
                       >
                         <Grid container justify="center">
@@ -670,6 +649,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                       <TableCell
                         style={{
                           textAlign: "center",
+                          maxWidth: "4rem",
                         }}
                       >
                         <Grid container justify="center">
@@ -679,6 +659,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                       <TableCell
                         style={{
                           textAlign: "center",
+                          maxWidth: "4rem",
                         }}
                       >
                         <Grid container justify="center">
@@ -693,10 +674,7 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
               <TableBody>
                 {stableSort(
                   rows,
-                  getComparator(
-                    order,
-                    orderBy === "User" ? "username" : orderBy
-                  )
+                  getComparator(order, orderBy === "User" ? "name" : orderBy)
                 )
                   .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
                   .map((row, index) => {
@@ -705,9 +683,6 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                       return (
                         <TableRow
                           hover
-                          onClick={(event) =>
-                            handleClick(event, row.username, row.id)
-                          }
                           role="checkbox"
                           tabIndex={-1}
                           key={row.id}
@@ -827,9 +802,6 @@ const UserDetailsTable = ({ inviteUserDialog, ...props }) => {
                     return (
                       <TableRow
                         hover
-                        onClick={(event) =>
-                          handleClick(event, row.username, row.id)
-                        }
                         role="checkbox"
                         tabIndex={-1}
                         key={row.id}

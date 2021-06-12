@@ -15,9 +15,8 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 router.get("/", auth, async (req, res) => {
   try {
     let { order, orderBy = "username", limit, skip = 0, search } = req.query;
-    if(orderBy==="joined") orderBy="createdAt"
-    if(orderBy==="role") orderBy="userRole"
-    console.log(req.query)
+    if (orderBy === "joined") orderBy = "createdAt";
+    if (orderBy === "role") orderBy = "userRole";
     limit = +limit;
     skip = +skip;
     if (!limit || limit < 0) limit = 5;
@@ -26,8 +25,8 @@ router.get("/", auth, async (req, res) => {
     if (search && search.length) {
       optionalMatches.push({
         $match: {
-          username: {
-            $regex: new RegExp(`^(${search})`),
+          name: {
+            $regex: new RegExp(`^(${search})`, "i"),
           },
         },
       });
@@ -66,7 +65,9 @@ router.get("/", auth, async (req, res) => {
     ]);
     let total;
     if (search && search.length) {
-      total = await User.find({ username: new RegExp(`^(${search})`) }).count();
+      total = await User.find({
+        name: new RegExp(`^(${search})`, "i"),
+      }).count();
     } else {
       total = await User.count();
     }
